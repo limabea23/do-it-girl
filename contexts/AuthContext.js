@@ -29,10 +29,10 @@ export const AuthProvider = ({ children }) => {
 
     if (!user && !inAuthGroup) {
       // Redirecionar para login se não estiver autenticado
-      router.replace("/(auth)/login");
+      router.replace("/login");
     } else if (user && inAuthGroup) {
       // Redirecionar para home se já estiver autenticado
-      router.replace("/(tabs)/home");
+      router.replace("/home");
     }
   }, [user, segments, isLoading]);
 
@@ -95,7 +95,7 @@ export const AuthProvider = ({ children }) => {
     try {
       await removeUser();
       setUser(null);
-      router.replace("/(auth)/login");
+      router.replace("/login");
     } catch (error) {
       console.error("Erro ao fazer logout:", error);
     }
