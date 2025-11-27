@@ -28,8 +28,8 @@ export const AuthProvider = ({ children }) => {
     const inAuthGroup = segments[0] === "(auth)";
 
     if (!user && !inAuthGroup) {
-      // Redirecionar para login se não estiver autenticado
-      router.replace("/login");
+      // Redirecionar para Signin se não estiver autenticado
+      router.replace("/signin");
     } else if (user && inAuthGroup) {
       // Redirecionar para home se já estiver autenticado
       router.replace("/home");
@@ -47,9 +47,9 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const signIn = async (email, password) => {
+  const signIn = async (username, password) => {
     try {
-      const result = await validateLogin(email, password);
+      const result = await validateLogin(username, password);
 
       if (result.success) {
         setUser(result.user);
@@ -64,11 +64,11 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const signUp = async (name, email, password) => {
+  const signUp = async (username, email, password) => {
     try {
       const newUser = {
         id: Date.now().toString(),
-        name,
+        username,
         email,
         password, // Em produção, use hash!
         createdAt: new Date().toISOString(),
@@ -95,7 +95,7 @@ export const AuthProvider = ({ children }) => {
     try {
       await removeUser();
       setUser(null);
-      router.replace("/login");
+      router.replace("/signin");
     } catch (error) {
       console.error("Erro ao fazer logout:", error);
     }
