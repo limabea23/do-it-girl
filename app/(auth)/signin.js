@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import {
   View,
+  Image,
   Text,
   TextInput,
   TouchableOpacity,
@@ -14,20 +15,20 @@ import { useAuth } from "../../contexts/AuthContext";
 import { Link } from "expo-router";
 
 export default function LoginScreen() {
-  const [email, setEmail] = useState("");
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const { signIn } = useAuth();
 
   const handleLogin = async () => {
-    if (!email || !password) {
+    if (!username || !password) {
       Alert.alert("Erro", "Preencha todos os campos");
       return;
     }
 
     setLoading(true);
     try {
-      const result = await signIn(email, password);
+      const result = await signIn(username, password);
 
       if (!result.success) {
         Alert.alert("Erro", result.message || "Falha ao fazer login");
@@ -45,16 +46,16 @@ export default function LoginScreen() {
       behavior={Platform.OS === "ios" ? "padding" : "height"}
     >
       <View style={styles.content}>
-        <Text style={styles.emoji}>🔐</Text>
-        <Text style={styles.title}>Bem-vindo!</Text>
-        <Text style={styles.subtitle}>Faça login para continuar</Text>
+        <Image source={require("../../assets/images/Logo.png")} style={styles.image} />
+        <Text style={styles.title}>Bem-vindo ao Do It, Girl!</Text>
+        <Text style={styles.subtitle}>Acesse sua conta para continuar       </Text>
 
         <TextInput
           style={styles.input}
-          placeholder="Email"
-          value={email}
-          onChangeText={setEmail}
-          keyboardType="email-address"
+          placeholder="Username"
+          value={username}
+          onChangeText={setUsername}
+          keyboardType="default"
           autoCapitalize="none"
           autoCorrect={false}
           editable={!loading}
@@ -84,7 +85,7 @@ export default function LoginScreen() {
 
         <View style={styles.registerContainer}>
           <Text style={styles.registerText}>Não tem conta? </Text>
-          <Link href="/(auth)/register" asChild>
+          <Link href="/(auth)/signup" asChild>
             <TouchableOpacity disabled={loading}>
               <Text style={styles.registerLink}>Cadastre-se</Text>
             </TouchableOpacity>
