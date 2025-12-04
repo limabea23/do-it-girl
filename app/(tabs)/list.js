@@ -5,8 +5,9 @@ const items = [
 	{ id: '1', text: 'Passar tônico e hidratante facial', icon: '' },
 	{ id: '2', text: 'Fazer unhas', icon: '✏️' },
 	{ id: '3', text: 'Fazer máscara no cabelo', icon: '♡' },
-	{ id: '4', text: '', icon: '📄' },
+	{ id: '4', text: 'Fazer o trabalho da escola', icon: '📄' },
 	{ id: '5', text: 'Fazer skincare noturno', icon: '' },
+    { id: '6', text: 'Ler um capítulo do meu livro favorito', icon: '📚' },
 ]
 
 export default function List() {
