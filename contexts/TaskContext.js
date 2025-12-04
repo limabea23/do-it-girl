@@ -40,6 +40,31 @@ const seedTasks = [
 export function TaskProvider({ children }) {
   const [tasks, setTasks] = useState(seedTasks)
 
+  useEffect(() => {
+    (async () => {
+      try {
+        const data = await AsyncStorage.getItem('tasks');
+        if (data) {
+          const parsed = JSON.parse(data);
+          if (Array.isArray(parsed)) setTasks(parsed);
+        }
+      } catch (e) {
+        console.warn('Erro ao carregar tarefas:', e);
+      }
+    })();
+  }, []);
+
+  // Salvar tarefas sempre que mudarem
+  useEffect(() => {
+    (async () => {
+      try {
+        await AsyncStorage.setItem('tasks', JSON.stringify(tasks));
+      } catch (e) {
+        console.warn('Erro ao salvar tarefas:', e);
+      }
+    })();
+  }, [tasks]);
+
   const addTask = useCallback((taskData) => {
     const timestamp = Date.now().toString()
     const preparedSubtasks = (taskData.subtasks || []).map((title, index) => ({
