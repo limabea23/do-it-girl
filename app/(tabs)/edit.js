@@ -158,6 +158,7 @@ export default function EditTaskScreen() {
 		<SafeAreaView style={styles.safe}>
 			<ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
 				<View style={styles.panel}>
+					<Text style={styles.topTitle}>Minha Lista e Tarefas!</Text>
 					<View style={styles.headerRow}>
 						<TouchableOpacity onPress={() => navigation.navigate('list')}>
 							<Text style={styles.backSymbol}>{'<'}</Text>
@@ -188,7 +189,7 @@ export default function EditTaskScreen() {
 					</View>
 
 					<View style={styles.section}>
-						<Text style={styles.fieldLabel}>Descricao</Text>
+						<Text style={styles.fieldLabel}>Descrição</Text>
 						<TextInput
 							value={description}
 							onChangeText={setDescription}
@@ -212,7 +213,7 @@ export default function EditTaskScreen() {
 					</View>
 
 					<TouchableOpacity style={styles.saveButton} onPress={handleSaveInfo}>
-						<Text style={styles.saveButtonText}>Salvar informacoes</Text>
+						<Text style={styles.saveButtonText}>Salvar informações</Text>
 					</TouchableOpacity>
 
 					<View style={styles.section}>
@@ -254,6 +255,13 @@ const styles = StyleSheet.create({
 		borderRadius: 0,
 		paddingVertical: 6,
 		width: '100%',
+	},
+	topTitle: {
+		color: '#fff',
+		fontSize: 26,
+		fontWeight: '700',
+		textAlign: 'center',
+		marginBottom: 12,
 	},
 	headerRow: {
 		flexDirection: 'row',
