@@ -1,92 +1,142 @@
-import React, { useState } from 'react';
-import { SafeAreaView, View, Text, ScrollView, TouchableOpacity, StyleSheet, TextInput } from 'react-native';
-import { useTasks } from '../../contexts/TaskContext';
-import { useRouter } from 'expo-router';
+import React, { useMemo, useState } from 'react'
+import {
+    SafeAreaView,
+    View,
+    Text,
+    ScrollView,
+    TouchableOpacity,
+    StyleSheet,
+    TextInput,
+} from 'react-native'
+import { useNavigation } from '@react-navigation/native'
+
+import { useTasks } from '../../contexts/TaskContext'
+
+const formatDate = (value) => {
+    if (!value) {
+        return 'Sem data'
+    }
+
+    if (/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+        const year = value.slice(0, 4)
+        const month = value.slice(5, 7)
+        const day = value.slice(8, 10)
+        return `${day}/${month}/${year}`
+    }
+
+    const parsed = new Date(value)
+    if (Number.isNaN(parsed.getTime())) {
+        return value
+    }
+
+    const day = String(parsed.getDate()).padStart(2, '0')
+    const month = String(parsed.getMonth() + 1).padStart(2, '0')
+    const year = parsed.getFullYear()
+    return `${day}/${month}/${year}`
+}
+
+const formatTime = (value) => {
+    if (!value) {
+        return 'Sem horario'
+    }
+
+    if (/^\d{2}:\d{2}$/.test(value)) {
+        return value
+    }
+
+    const parsed = new Date(value)
+    if (Number.isNaN(parsed.getTime())) {
+        return value
+    }
+
+    const hours = String(parsed.getHours()).padStart(2, '0')
+    const minutes = String(parsed.getMinutes()).padStart(2, '0')
+    return `${hours}:${minutes}`
+}
 
 export default function List() {
-    const [search, setSearch] = useState("");
-    const { tasks, deleteTask } = useTasks();
-    const router = useRouter();
+    const [search, setSearch] = useState('')
+    const navigation = useNavigation()
+    const { tasks } = useTasks()
 
-    const filtered = tasks
-        .filter((t) => t.title.toLowerCase().includes(search.toLowerCase()))
-        .map((t) => ({
-            id: t.id,
-            title: t.title,
-            category: t.category,
-            important: t.important,
-            priority: t.priority,
-            subtasks: t.subtasks || [],
-        }));
+    const sortedTasks = useMemo(() => {
+        return [...tasks].sort((a, b) => {
+            if (a.createdAt > b.createdAt) {
+                return -1
+            }
+            if (a.createdAt < b.createdAt) {
+                return 1
+            }
+            return 0
+        })
+    }, [tasks])
+
+    const filtered = useMemo(() => {
+        const term = search.trim().toLowerCase()
+        if (!term) {
+            return sortedTasks
+        }
+
+        return sortedTasks.filter((task) => {
+            const text = [task.title, task.listName, task.priority]
+                .filter(Boolean)
+                .join(' ')
+                .toLowerCase()
+            return text.includes(term)
+        })
+    }, [sortedTasks, search])
+
+    const handleTaskPress = (task) => {
+        navigation.navigate('edit', { taskId: task.id })
+    }
+
+    const handleCreatePress = () => {
+        navigation.navigate('create')
+    }
 
     return (
         <SafeAreaView style={styles.safe}>
             <View style={styles.panel}>
                 <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
                     <Text style={styles.title}>Minha Lista e Tarefas!</Text>
+
+                    <TouchableOpacity style={styles.primaryButton} onPress={handleCreatePress}>
+                        <Text style={styles.primaryButtonText}>Criar nova tarefa</Text>
+                    </TouchableOpacity>
+
                     <TextInput
-                        placeholder="Buscar tarefa..."
+                        placeholder="Buscar tarefa"
                         placeholderTextColor="#ffdede"
                         style={styles.input}
                         value={search}
                         onChangeText={setSearch}
                     />
 
+                    {filtered.map((task) => {
+                        const subtitleParts = [formatDate(task.date), formatTime(task.time)]
+                        if (task.listName) {
+                            subtitleParts.push(task.listName)
+                        }
+
+                        return (
+                            <TouchableOpacity
+                                key={task.id}
+                                style={[styles.card, task.completed && styles.cardCompleted]}
+                                activeOpacity={0.85}
+                                onPress={() => handleTaskPress(task)}
+                            >
+                                <Text style={styles.cardTitle}>{task.title}</Text>
+                                <Text style={styles.cardSubtitle}>{subtitleParts.join(' • ')}</Text>
+                                {task.priority ? <Text style={styles.cardPriority}>Prioridade: {task.priority}</Text> : null}
+                            </TouchableOpacity>
+                        )
+                    })}
+
                     {filtered.length === 0 && (
-                        <Text style={{ textAlign: "center", color: "#fff", marginTop: 10 }}>
-                            Nenhuma tarefa encontrada.
-                        </Text>
+                        <Text style={styles.emptyState}>Nenhuma tarefa encontrada.</Text>
                     )}
 
-                    {filtered.map((item) => (
-                        <TouchableOpacity
-                            key={item.id}
-                            style={styles.card}
-                            activeOpacity={0.85}
-                            onPress={() => router.push({ pathname: '/edit', query: { id: item.id } })}
-                        >
-                            <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
-                                <View style={{ flex: 1 }}>
-                                    <Text style={styles.cardText}>{item.title}</Text>
-                                    <Text style={{ color: '#b06e6e', fontSize: 13, marginTop: 2 }}>
-                                        {item.category ? `Categoria: ${item.category}` : ''}
-                                    </Text>
-                                    <View style={{ flexDirection: 'row', marginTop: 2 }}>
-                                        {item.important && (
-                                            <Text style={{ color: '#f39b97', fontWeight: 'bold', marginRight: 10 }}>Meta</Text>
-                                        )}
-                                        {item.priority && (
-                                            <Text style={{ color: '#f39b97', fontWeight: 'bold' }}>Prioridade</Text>
-                                        )}
-                                    </View>
-                                </View>
-                                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                                    <TouchableOpacity
-                                        onPress={() => router.push({ pathname: '/edit', query: { id: item.id } })}
-                                        style={styles.editBtn}
-                                    >
-                                        <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 18 }}>✏️</Text>
-                                    </TouchableOpacity>
-                                    <TouchableOpacity onPress={() => deleteTask(item.id)} style={styles.deleteBtn}>
-                                        <Text style={{ color: "#fff", fontWeight: "bold" }}>X</Text>
-                                    </TouchableOpacity>
-                                </View>
-                            </View>
-                            {item.subtasks && item.subtasks.length > 0 && (
-                                <View style={{ marginTop: 6 }}>
-                                    {item.subtasks.map((sub, idx) => (
-                                        !!sub && (
-                                            <Text key={idx} style={{ color: "#6b3f3f", fontSize: 13, marginLeft: 8 }}>
-                                                • {sub}
-                                            </Text>
-                                        )
-                                    ))}
-                                </View>
-                            )}
-                        </TouchableOpacity>
-                    ))}
-
-                    <View style={{ height: 24 }} />
+                    <View style={styles.bottomSpacing} />
                 </ScrollView>
             </View>
         </SafeAreaView>
@@ -117,10 +167,19 @@ const styles = StyleSheet.create({
         color: "#fff",
         textAlign: "center",
         marginBottom: 18,
-        fontFamily: "Georgia",
-        textShadowColor: "rgba(0,0,0,0.15)",
-        textShadowOffset: { width: 0, height: 1 },
-        textShadowRadius: 2,
+        fontWeight: '600',
+    },
+    primaryButton: {
+        backgroundColor: '#f6cfcf',
+        paddingVertical: 11,
+        borderRadius: 12,
+        alignItems: 'center',
+        marginBottom: 12,
+    },
+    primaryButtonText: {
+        color: '#6b3f3f',
+        fontSize: 15,
+        fontWeight: '600',
     },
     input: {
         backgroundColor: "#f6c0c0",
@@ -147,24 +206,31 @@ const styles = StyleSheet.create({
         shadowRadius: 4,
         elevation: 2,
     },
-    cardText: {
-        color: "#6b3f3f",
+    cardCompleted: {
+        opacity: 0.6,
+    },
+    cardTitle: {
+        color: '#6b3f3f',
         fontSize: 16,
-        flex: 1,
+        fontWeight: '600',
+        marginBottom: 4,
     },
-    editBtn: {
-        backgroundColor: "#f6cfcf",
-        borderRadius: 12,
-        paddingHorizontal: 10,
-        paddingVertical: 2,
-        marginLeft: 0,
-        marginRight: 6,
+    cardSubtitle: {
+        color: '#6b3f3f',
+        fontSize: 13,
     },
-    deleteBtn: {
-        backgroundColor: "#f39b97",
-        borderRadius: 12,
-        paddingHorizontal: 10,
-        paddingVertical: 2,
-        marginLeft: 0,
+    cardPriority: {
+        color: '#a13d3a',
+        fontSize: 13,
+        marginTop: 6,
+        fontWeight: '500',
+    },
+    emptyState: {
+        textAlign: 'center',
+        color: '#fff',
+        marginTop: 10,
+    },
+    bottomSpacing: {
+        height: 24,
     },
 });

@@ -1,183 +1,273 @@
-import React, { useState } from "react";
-import { View, Text, StyleSheet, TextInput, TouchableOpacity, ScrollView } from "react-native";
-import { useTasks } from "../../contexts/TaskContext";
-import { useRouter } from "expo-router";
+import React, { useState } from 'react'
+import {
+	Alert,
+	SafeAreaView,
+	ScrollView,
+	StyleSheet,
+	Text,
+	TextInput,
+	TouchableOpacity,
+	View,
+} from 'react-native'
+import { useNavigation } from '@react-navigation/native'
 
-export default function CreateTask() {
-    const { addTask } = useTasks();
-    const router = useRouter();
+import { useTasks } from '../../contexts/TaskContext'
 
-    const [title, setTitle] = useState("");
-    const [category, setCategory] = useState("");
-    const [important, setImportant] = useState(false);
-    const [priority, setPriority] = useState(false);
-    const [subtasks, setSubtasks] = useState([]);
+export default function CreateTaskScreen() {
+	const navigation = useNavigation()
+	const { addTask } = useTasks()
 
-    function handleCreate() {
-        if (!title.trim()) return;
+	const [title, setTitle] = useState('')
+	const [date, setDate] = useState('')
+	const [time, setTime] = useState('')
+	const [listName, setListName] = useState('')
+	const [priority, setPriority] = useState('')
+	const [description, setDescription] = useState('')
+	const [goal, setGoal] = useState('')
+	const [subtaskInput, setSubtaskInput] = useState('')
+	const [subtasks, setSubtasks] = useState([])
 
-        const newTask = {
-            id: Date.now().toString(),
-            title,
-            category,
-            important,
-            priority,
-            subtasks,
-        };
+	const handleAddSubtask = () => {
+		const trimmed = subtaskInput.trim()
+		if (!trimmed) {
+			return
+		}
+		setSubtasks((current) => [...current, trimmed])
+		setSubtaskInput('')
+	}
 
-        addTask(newTask);
-        router.push("/list");
-    }
+	const handleRemoveSubtask = (index) => {
+		setSubtasks((current) => current.filter((_, itemIndex) => itemIndex !== index))
+	}
 
-    return (
-        <ScrollView style={styles.container} contentContainerStyle={{ paddingBottom: 40 }}>
-            <Text style={styles.title}>Minhas Listas e Tarefas</Text>
+	const handleSaveTask = () => {
+		const trimmedTitle = title.trim()
+		if (!trimmedTitle) {
+			Alert.alert('Aviso', 'Informe um titulo para a tarefa.')
+			return
+		}
 
-            {/* Filtro de categoria */}
-            <View style={styles.row}>
-                {['Escola', 'Bem-estar', 'Autocuidado'].map((cat) => (
-                    <TouchableOpacity
-                        key={cat}
-                        style={[styles.chip, category === cat && { backgroundColor: '#f39b97', borderWidth: 1, borderColor: '#fff' }]}
-                        onPress={() => setCategory(cat)}
-                    >
-                        <Text style={{ color: category === cat ? '#fff' : '#6b3f3f', fontWeight: category === cat ? 'bold' : 'normal' }}>{cat}</Text>
-                    </TouchableOpacity>
-                ))}
-            </View>
+		const createdTask = addTask({
+			title: trimmedTitle,
+			date: date.trim(),
+			time: time.trim(),
+			listName: listName.trim(),
+			priority: priority.trim(),
+			description: description.trim(),
+			goal: goal.trim(),
+			subtasks,
+		})
 
-            <TextInput
-                style={styles.input}
-                placeholder="Título da sua tarefa..."
-                placeholderTextColor="#ffe5e5"
-                value={title}
-                onChangeText={setTitle}
-            />
+		navigation.navigate('edit', { taskId: createdTask.id })
+	}
 
-            {/* Bloco de meta e prioridade */}
-            <View style={[styles.row, { justifyContent: 'center', marginBottom: 20 }]}> 
-                <TouchableOpacity
-                    style={[styles.tag, important && { backgroundColor: "#f39b97", borderWidth: 1, borderColor: '#fff' }]}
-                    onPress={() => setImportant(!important)}
-                >
-                    <Text style={{ color: important ? '#fff' : '#6b3f3f', fontWeight: important ? 'bold' : 'normal' }}>Meta Importante</Text>
-                </TouchableOpacity>
+	return (
+		<SafeAreaView style={styles.safe}>
+			<ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+				<View style={styles.panel}>
+					<Text style={styles.heading}>Criar nova tarefa</Text>
 
-                <TouchableOpacity
-                    style={[styles.tag, priority && { backgroundColor: "#f39b97", borderWidth: 1, borderColor: '#fff' }]}
-                    onPress={() => setPriority(!priority)}
-                >
-                    <Text style={{ color: priority ? '#fff' : '#6b3f3f', fontWeight: priority ? 'bold' : 'normal' }}>Prioridade</Text>
-                </TouchableOpacity>
-            </View>
+					<TextInput
+						value={title}
+						onChangeText={setTitle}
+						placeholder="Titulo"
+						placeholderTextColor="#ffdede"
+						style={styles.input}
+					/>
 
-            {/* Subtarefas editáveis */}
-            <View style={styles.subBox}>
-                <Text style={styles.subtitle}>Subtarefas</Text>
-                {subtasks.map((sub, idx) => (
-                    <View key={idx} style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 6 }}>
-                        <Text style={{ color: '#6b3f3f', fontSize: 15, marginLeft: 8 }}>•</Text>
-                        <TextInput
-                            style={[styles.input, { flex: 1, marginBottom: 0, backgroundColor: '#fff5f5', fontSize: 15, paddingVertical: 6 }]}
-                            placeholder={`Subtarefa ${idx + 1}`}
-                            placeholderTextColor="#f6b3b3"
-                            value={sub}
-                            onChangeText={txt => setSubtasks(prev => prev.map((s, i) => i === idx ? txt : s))}
-                        />
-                        <TouchableOpacity onPress={() => setSubtasks(prev => prev.filter((_, i) => i !== idx))}>
-                            <Text style={{ color: '#f39b97', fontWeight: 'bold', fontSize: 18, marginLeft: 6 }}>X</Text>
-                        </TouchableOpacity>
-                    </View>
-                ))}
-                <TouchableOpacity
-                    style={styles.addButton}
-                    onPress={() => setSubtasks(prev => [...prev, ''])}
-                >
-                    <Text style={{ color: "#fff", fontSize: 18 }}>+</Text>
-                </TouchableOpacity>
-            </View>
+					<View style={styles.inlineGroup}>
+						<TextInput
+							value={date}
+							onChangeText={setDate}
+							placeholder="Data (AAAA-MM-DD)"
+							placeholderTextColor="#ffdede"
+							style={[styles.input, styles.halfInput]}
+						/>
+						<TextInput
+							value={time}
+							onChangeText={setTime}
+							placeholder="Hora (HH:MM)"
+							placeholderTextColor="#ffdede"
+							style={[styles.input, styles.halfInput]}
+						/>
+					</View>
 
-            <TouchableOpacity style={styles.btn} onPress={handleCreate}>
-                <Text style={styles.btnText}>CRIAR</Text>
-            </TouchableOpacity>
-        </ScrollView>
-    );
+					<TextInput
+						value={listName}
+						onChangeText={setListName}
+						placeholder="Lista"
+						placeholderTextColor="#ffdede"
+						style={styles.input}
+					/>
+
+					<TextInput
+						value={priority}
+						onChangeText={setPriority}
+						placeholder="Prioridade"
+						placeholderTextColor="#ffdede"
+						style={styles.input}
+					/>
+
+					<TextInput
+						value={description}
+						onChangeText={setDescription}
+						placeholder="Descricao"
+						placeholderTextColor="#ffdede"
+						style={[styles.input, styles.multiline]}
+						multiline
+					/>
+
+					<TextInput
+						value={goal}
+						onChangeText={setGoal}
+						placeholder="Meta"
+						placeholderTextColor="#ffdede"
+						style={[styles.input, styles.multiline]}
+						multiline
+					/>
+
+					<View style={styles.subtaskHeader}>
+						<Text style={styles.subtaskTitle}>Subtarefas</Text>
+						<View style={styles.subtaskRow}>
+							<TextInput
+								value={subtaskInput}
+								onChangeText={setSubtaskInput}
+								placeholder="Adicionar subtarefa"
+								placeholderTextColor="#ffdede"
+								style={[styles.input, styles.subtaskInput]}
+							/>
+							<TouchableOpacity style={styles.addButton} onPress={handleAddSubtask}>
+								<Text style={styles.addButtonText}>+</Text>
+							</TouchableOpacity>
+						</View>
+					</View>
+
+					{subtasks.length > 0 && (
+						<View style={styles.subtaskList}>
+							{subtasks.map((item, index) => (
+								<View key={`${item}-${index}`} style={styles.subtaskItem}>
+									<Text style={styles.subtaskText}>{item}</Text>
+									<TouchableOpacity onPress={() => handleRemoveSubtask(index)}>
+										<Text style={styles.removeText}>Remover</Text>
+									</TouchableOpacity>
+								</View>
+							))}
+						</View>
+					)}
+
+					<TouchableOpacity style={styles.saveButton} onPress={handleSaveTask}>
+						<Text style={styles.saveButtonText}>Salvar tarefa</Text>
+					</TouchableOpacity>
+				</View>
+			</ScrollView>
+		</SafeAreaView>
+	)
 }
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: "#f39b97",
-        padding: 20,
-    },
-    title: {
-        fontSize: 26,
-        color: "#fff",
-        textAlign: "center",
-        marginBottom: 15,
-        fontFamily: "Georgia",
-    },
-    row: {
-        flexDirection: "row",
-        gap: 10,
-        marginBottom: 15,
-    },
-    chip: {
-        backgroundColor: "#ffd1d1",
-        paddingVertical: 6,
-        paddingHorizontal: 16,
-        borderRadius: 20,
-    },
-    input: {
-        backgroundColor: "#f6c0c0",
-        borderRadius: 12,
-        padding: 12,
-        color: "#6b3f3f",
-        marginBottom: 15,
-        fontSize: 16,
-    },
-    tag: {
-        backgroundColor: "#f6cfcf",
-        paddingVertical: 10,
-        paddingHorizontal: 14,
-        borderRadius: 20,
-    },
-    subBox: {
-        height: 150,
-        backgroundColor: "#f6b3b3",
-        borderRadius: 12,
-        marginTop: 20,
-        padding: 10,
-        position: "relative",
-    },
-    subtitle: {
-        color: "#6b3f3f",
-        fontSize: 18,
-        marginBottom: 8,
-    },
-    addButton: {
-        width: 36,
-        height: 36,
-        borderRadius: 18,
-        backgroundColor: "#f39b97",
-        position: "absolute",
-        bottom: 12,
-        right: 12,
-        alignItems: "center",
-        justifyContent: "center",
-    },
-    btn: {
-        backgroundColor: "#f6cfcf",
-        paddingVertical: 14,
-        borderRadius: 18,
-        marginTop: 25,
-        width: "70%",
-        alignSelf: "center",
-    },
-    btnText: {
-        textAlign: "center",
-        color: "#6b3f3f",
-        fontSize: 16,
-        fontWeight: "bold",
-    },
-});
+	safe: {
+		flex: 1,
+		backgroundColor: '#e6eef0',
+	},
+	content: {
+		paddingVertical: 18,
+	},
+	panel: {
+		backgroundColor: '#f39b97',
+		marginHorizontal: '4%',
+		borderRadius: 12,
+		padding: 18,
+	},
+	heading: {
+		fontSize: 24,
+		color: '#fff',
+		textAlign: 'center',
+		marginBottom: 16,
+		fontWeight: '600',
+	},
+	input: {
+		backgroundColor: '#f6c0c0',
+		paddingVertical: 10,
+		paddingHorizontal: 14,
+		borderRadius: 12,
+		color: '#6b3f3f',
+		marginBottom: 10,
+		fontSize: 15,
+	},
+	multiline: {
+		minHeight: 80,
+		textAlignVertical: 'top',
+	},
+	inlineGroup: {
+		flexDirection: 'row',
+		justifyContent: 'space-between',
+	},
+	halfInput: {
+		flex: 1,
+	},
+	subtaskHeader: {
+		marginTop: 12,
+	},
+	subtaskTitle: {
+		color: '#fff',
+		fontSize: 18,
+		fontWeight: '600',
+		marginBottom: 8,
+	},
+	subtaskRow: {
+		flexDirection: 'row',
+		alignItems: 'center',
+	},
+	subtaskInput: {
+		flex: 1,
+		marginBottom: 0,
+		marginRight: 8,
+	},
+	addButton: {
+		width: 44,
+		height: 44,
+		borderRadius: 22,
+		backgroundColor: '#f6cfcf',
+		alignItems: 'center',
+		justifyContent: 'center',
+	},
+	addButtonText: {
+		color: '#6b3f3f',
+		fontSize: 24,
+		fontWeight: '600',
+	},
+	subtaskList: {
+		marginTop: 12,
+		backgroundColor: '#f6cfcf',
+		borderRadius: 12,
+		padding: 12,
+	},
+	subtaskItem: {
+		flexDirection: 'row',
+		justifyContent: 'space-between',
+		alignItems: 'center',
+		paddingVertical: 6,
+	},
+	subtaskText: {
+		color: '#6b3f3f',
+		fontSize: 15,
+		flex: 1,
+		marginRight: 8,
+	},
+	removeText: {
+		color: '#a13d3a',
+		fontWeight: '500',
+	},
+	saveButton: {
+		marginTop: 18,
+		backgroundColor: '#f6cfcf',
+		paddingVertical: 14,
+		borderRadius: 12,
+		alignItems: 'center',
+	},
+	saveButtonText: {
+		color: '#6b3f3f',
+		fontSize: 16,
+		fontWeight: '600',
+	},
+})
