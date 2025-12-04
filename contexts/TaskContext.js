@@ -1,14 +1,46 @@
+import React, { createContext, useCallback, useContext, useMemo, useState } from 'react'
 
+const TaskContext = createContext(null)
 
-import React, { createContext, useState, useContext, useEffect } from "react";
-import AsyncStorage from '@react-native-async-storage/async-storage';
-
-
-const TaskContext = createContext();
+const seedTasks = [
+  {
+    id: 'seed-1',
+    title: 'Estudar Geografia',
+    date: '2025-11-25',
+    time: '14:40',
+    listName: 'Escola',
+    priority: 'Alta',
+    description: 'Revisar capitulos 3 e 4 do livro.',
+    goal: 'Garantir nota alta na avaliacao.',
+    subtasks: [
+      { id: 'seed-1-sub-1', title: 'Pesquisar mapas', completed: false },
+      { id: 'seed-1-sub-2', title: 'Separar materiais', completed: true },
+    ],
+    completed: false,
+    createdAt: '2025-11-01T10:00:00.000Z',
+  },
+  {
+    id: 'seed-2',
+    title: 'Rotina de skincare',
+    date: '2025-12-01',
+    time: '20:00',
+    listName: 'Autocuidado',
+    priority: 'Media',
+    description: '',
+    goal: '',
+    subtasks: [
+      { id: 'seed-2-sub-1', title: 'Limpar o rosto', completed: false },
+      { id: 'seed-2-sub-2', title: 'Aplicar hidratante', completed: false },
+    ],
+    completed: false,
+    createdAt: '2025-11-15T12:30:00.000Z',
+  },
+]
 
 export function TaskProvider({ children }) {
-  const [tasks, setTasks] = useState([]);
+  const [tasks, setTasks] = useState(seedTasks)
 
+<<<<<<< HEAD
   // Carregar tarefas salvas ao iniciar
   useEffect(() => {
     (async () => {
@@ -34,31 +66,74 @@ export function TaskProvider({ children }) {
       }
     })();
   }, [tasks]);
+=======
+  const addTask = useCallback((taskData) => {
+    const timestamp = Date.now().toString()
+    const preparedSubtasks = (taskData.subtasks || []).map((title, index) => ({
+      id: `${timestamp}-sub-${index}`,
+      title,
+      completed: false,
+    }))
 
-  function addTask(task) {
-    setTasks((prev) => [...prev, task]);
-  }
+    const newTask = {
+      id: `task-${timestamp}`,
+      title: taskData.title,
+      date: taskData.date || '',
+      time: taskData.time || '',
+      listName: taskData.listName || '',
+      priority: taskData.priority || '',
+      description: taskData.description || '',
+      goal: taskData.goal || '',
+      subtasks: preparedSubtasks,
+      completed: false,
+      createdAt: new Date().toISOString(),
+    }
+>>>>>>> e3ed516b438c2b2b84b8e13511e600ce12f85482
 
-  function deleteTask(id) {
-    setTasks((prev) => prev.filter((task) => task.id !== id));
-  }
+    setTasks((current) => [newTask, ...current])
+    return newTask
+  }, [])
 
-  function updateTask(id, updatedTask) {
-    setTasks((prev) => prev.map((task) => (task.id === id ? updatedTask : task)));
-  }
+  const updateTask = useCallback((taskId, updates) => {
+    setTasks((current) =>
+      current.map((task) =>
+        task.id === taskId
+          ? { ...task, ...updates }
+          : task,
+      ),
+    )
+  }, [])
 
-  return (
-    <TaskContext.Provider value={{ tasks, addTask, deleteTask, updateTask }}>
-      {children}
-    </TaskContext.Provider>
-  );
+  const toggleSubtask = useCallback((taskId, subtaskId) => {
+    setTasks((current) =>
+      current.map((task) => {
+        if (task.id !== taskId) {
+          return task
+        }
+
+        const subtasks = task.subtasks.map((subtask) =>
+          subtask.id === subtaskId
+            ? { ...subtask, completed: !subtask.completed }
+            : subtask,
+        )
+
+        return { ...task, subtasks }
+      }),
+    )
+  }, [])
+
+  const value = useMemo(
+    () => ({ tasks, addTask, updateTask, toggleSubtask }),
+    [tasks, addTask, updateTask, toggleSubtask],
+  )
+
+  return <TaskContext.Provider value={value}>{children}</TaskContext.Provider>
 }
 
-
 export function useTasks() {
-  const context = useContext(TaskContext);
+  const context = useContext(TaskContext)
   if (!context) {
-    throw new Error("useTasks must be used within a TaskProvider");
+    throw new Error('useTasks must be used inside TaskProvider')
   }
-  return context;
+  return context
 }
