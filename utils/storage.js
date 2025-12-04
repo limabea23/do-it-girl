@@ -72,11 +72,11 @@ export const saveNewUser = async (user) => {
 };
 
 // Validar login
-export const validateLogin = async (email, password) => {
+export const validateLogin = async (username, password) => {
   try {
     const users = await getAllUsers();
     const user = users.find(
-      (u) => u.email === email && u.password === password
+      (u) => u.username === username && u.password === password
     );
 
     if (user) {
