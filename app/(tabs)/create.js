@@ -58,7 +58,7 @@ export default function CreateTaskScreen() {
 			subtasks,
 		})
 
-		navigation.navigate('edit', { taskId: createdTask.id })
+		navigation.navigate('edit', { taskId: createdTask.id, feedback: 'created' })
 	}
 
 	return (
@@ -167,16 +167,20 @@ export default function CreateTaskScreen() {
 const styles = StyleSheet.create({
 	safe: {
 		flex: 1,
-		backgroundColor: '#e6eef0',
+		flex: 1,
+		backgroundColor: '#f39b97',
 	},
 	content: {
-		paddingVertical: 18,
+		flexGrow: 1,
+		paddingVertical: 24,
+		paddingHorizontal: 22,
 	},
 	panel: {
+		flex: 1,
 		backgroundColor: '#f39b97',
-		marginHorizontal: '4%',
-		borderRadius: 12,
-		padding: 18,
+		borderRadius: 0,
+		paddingVertical: 4,
+		width: '100%',
 	},
 	heading: {
 		fontSize: 24,
