@@ -40,8 +40,6 @@ const seedTasks = [
 export function TaskProvider({ children }) {
   const [tasks, setTasks] = useState(seedTasks)
 
-<<<<<<< HEAD
-  // Carregar tarefas salvas ao iniciar
   useEffect(() => {
     (async () => {
       try {
@@ -66,7 +64,7 @@ export function TaskProvider({ children }) {
       }
     })();
   }, [tasks]);
-=======
+
   const addTask = useCallback((taskData) => {
     const timestamp = Date.now().toString()
     const preparedSubtasks = (taskData.subtasks || []).map((title, index) => ({
@@ -88,7 +86,6 @@ export function TaskProvider({ children }) {
       completed: false,
       createdAt: new Date().toISOString(),
     }
->>>>>>> e3ed516b438c2b2b84b8e13511e600ce12f85482
 
     setTasks((current) => [newTask, ...current])
     return newTask
