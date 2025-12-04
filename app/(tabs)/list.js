@@ -35,6 +35,7 @@ const items = [
 	{ id: '28', text: 'Experimentar uma nova atividade física', icon: '🏋️‍♀️' },
 	{ id: '29', text: 'Fazer uma lista de coisas pelas quais sou grata', icon: '🙏' },
 	{ id: '30', text: 'Desconectar das redes sociais por um dia', icon: '📵' },
+	{ id: '31', text: 'Fazer um piquenique no parque', icon: '🧺' },
 ]
 
 export default function List() {
