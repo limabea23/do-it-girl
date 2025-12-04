@@ -11,14 +11,28 @@ export function TaskProvider({ children }) {
 
   // Carregar tarefas salvas ao iniciar
   useEffect(() => {
-    AsyncStorage.getItem('tasks').then(data => {
-      if (data) setTasks(JSON.parse(data));
-    });
+    (async () => {
+      try {
+        const data = await AsyncStorage.getItem('tasks');
+        if (data) {
+          const parsed = JSON.parse(data);
+          if (Array.isArray(parsed)) setTasks(parsed);
+        }
+      } catch (e) {
+        console.warn('Erro ao carregar tarefas:', e);
+      }
+    })();
   }, []);
 
   // Salvar tarefas sempre que mudarem
   useEffect(() => {
-    AsyncStorage.setItem('tasks', JSON.stringify(tasks));
+    (async () => {
+      try {
+        await AsyncStorage.setItem('tasks', JSON.stringify(tasks));
+      } catch (e) {
+        console.warn('Erro ao salvar tarefas:', e);
+      }
+    })();
   }, [tasks]);
 
   function addTask(task) {
