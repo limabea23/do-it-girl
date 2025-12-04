@@ -253,6 +253,7 @@ const styles = StyleSheet.create({
 		backgroundColor: '#f39b97',
 		borderRadius: 0,
 		paddingVertical: 6,
+		width: '100%',
 	},
 	headerRow: {
 		flexDirection: 'row',
