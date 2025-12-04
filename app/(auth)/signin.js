@@ -49,10 +49,10 @@ export default function LoginScreen() {
         <Image source={require("../../assets/images/Logo.png")} style={styles.image} />
         <Text style={styles.title}>Bem-vindo ao Do It, Girl!</Text>
         <Text style={styles.subtitle}>Acesse sua conta para continuar       </Text>
-
+        <Text style={styles.username}>username:</Text>
         <TextInput
           style={styles.input}
-          placeholder="Username"
+          placeholder="insira seu username"
           value={username}
           onChangeText={setUsername}
           keyboardType="default"
@@ -61,9 +61,10 @@ export default function LoginScreen() {
           editable={!loading}
         />
 
+        <Text style={styles.senha}>senha:</Text>
         <TextInput
           style={styles.input}
-          placeholder="Senha"
+          placeholder="insira sua senha"
           value={password}
           onChangeText={setPassword}
           secureTextEntry
@@ -84,17 +85,17 @@ export default function LoginScreen() {
         </TouchableOpacity>
 
         <View style={styles.registerContainer}>
-          <Text style={styles.registerText}>Não tem conta? </Text>
-          <Link href="/(auth)/signup" asChild>
-            <TouchableOpacity disabled={loading}>
-              <Text style={styles.registerLink}>Cadastre-se</Text>
-            </TouchableOpacity>
-          </Link>
+          <Text style={styles.registerText}>ainda não é cadastrado?</Text>
         </View>
-
-        <Text style={styles.infoText}>
-          💡 Dica: Se não tiver conta, crie uma nova!
-        </Text>
+        
+        <Link href="/(auth)/signup" asChild>
+          <TouchableOpacity 
+            style={styles.signupButton}
+            disabled={loading}
+          >
+            <Text style={styles.signupButtonText}>Cadastre-se</Text>
+          </TouchableOpacity>
+        </Link>
       </View>
     </KeyboardAvoidingView>
   );
@@ -103,55 +104,66 @@ export default function LoginScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#f5f5f5",
+    backgroundColor: "#F79489",
   },
   content: {
     flex: 1,
     justifyContent: "center",
     padding: 20,
   },
-  emoji: {
-    fontSize: 60,
-    textAlign: "center",
-    marginBottom: 20,
+  image: {
+    width: 250,
+    height: 250,
+    alignSelf: "center",
   },
   title: {
-    fontSize: 32,
+    fontSize: 28,
     fontWeight: "bold",
-    color: "#333",
+    color: "#ffff",
     marginBottom: 8,
     textAlign: "center",
   },
   subtitle: {
     fontSize: 16,
-    color: "#666",
+    color: "#fff",
     marginBottom: 40,
     textAlign: "center",
   },
+  username: {
+    fontSize: 16,
+    color: "#fff",
+  },
+  senha: {
+    fontSize: 16,
+    color: "#fff",
+  },
   input: {
-    backgroundColor: "#fff",
+    backgroundColor: "#FADCD9",
     borderRadius: 8,
     padding: 15,
     marginBottom: 15,
     fontSize: 16,
     borderWidth: 1,
+    color: "#F79489",
     borderColor: "#ddd",
   },
   button: {
-    backgroundColor: "#007AFF",
+    backgroundColor: "#FADCD9",
     borderRadius: 8,
-    padding: 15,
+    padding: 10,
     alignItems: "center",
     marginTop: 10,
-    minHeight: 50,
     justifyContent: "center",
+    width: 150,
+    alignSelf: "center",
   },
   buttonDisabled: {
     opacity: 0.6,
   },
   buttonText: {
-    color: "#fff",
-    fontSize: 16,
+    backgroundColor: "#FADCD9",
+    color: "#F79489",
+    fontSize: 15,
     fontWeight: "bold",
   },
   registerContainer: {
@@ -161,19 +173,23 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   registerText: {
-    color: "#666",
+    color: "#ffffffff",
     fontSize: 14,
-  },
-  registerLink: {
-    color: "#007AFF",
-    fontSize: 14,
-    fontWeight: "bold",
-  },
-  infoText: {
-    marginTop: 30,
     textAlign: "center",
-    color: "#888",
-    fontSize: 14,
-    paddingHorizontal: 20,
+  },
+  signupButton: {
+    backgroundColor: "#FADCD9",
+    borderRadius: 8,
+    padding: 10,
+    alignItems: "center",
+    marginTop: 10,
+    justifyContent: "center",
+    width: 150,
+    alignSelf: "center",
+  },
+  signupButtonText: {
+    color: "#F79489",
+    fontSize: 15,
+    fontWeight: "bold",
   },
 });
