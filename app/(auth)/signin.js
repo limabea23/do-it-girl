@@ -10,33 +10,58 @@ import {
   KeyboardAvoidingView,
   Platform,
   ActivityIndicator,
+  ScrollView,
 } from "react-native";
 import { useAuth } from "../../contexts/AuthContext";
 import { Link } from "expo-router";
+import { z } from "zod";
+import { Ionicons } from "@expo/vector-icons";
+
+const loginSchema = z.object({
+  username: z.string().min(1, "Username é obrigatório"),
+  password: z.string().min(1, "Senha é obrigatória"),
+});
 
 export default function LoginScreen() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [errors, setErrors] = useState({});
+  const [showPassword, setShowPassword] = useState(false);
   const { signIn } = useAuth();
 
   const handleLogin = async () => {
-    if (!username || !password) {
-      Alert.alert("Erro", "Preencha todos os campos");
-      return;
-    }
+    setErrors({});
 
-    setLoading(true);
     try {
-      const result = await signIn(username, password);
+      const validatedData = loginSchema.parse({
+        username: username.trim(),
+        password: password.trim(),
+      });
 
-      if (!result.success) {
-        Alert.alert("Erro", result.message || "Falha ao fazer login");
+      setLoading(true);
+      try {
+        const result = await signIn(validatedData.username, validatedData.password);
+
+        if (!result.success) {
+          window.alert(result.message || "Falha ao fazer login");
+        }
+      } catch (error) {
+        window.alert("Falha ao fazer login");
+      } finally {
+        setLoading(false);
       }
     } catch (error) {
-      Alert.alert("Erro", "Falha ao fazer login");
-    } finally {
-      setLoading(false);
+      if (error instanceof z.ZodError) {
+        const newErrors = {};
+        error.errors.forEach((err) => {
+          newErrors[err.path[0]] = err.message;
+        });
+        setErrors(newErrors);
+
+        const firstError = Object.values(newErrors)[0];
+        window.alert(firstError);
+      }
     }
   };
 
@@ -45,10 +70,14 @@ export default function LoginScreen() {
       style={styles.container}
       behavior={Platform.OS === "ios" ? "padding" : "height"}
     >
-      <View style={styles.content}>
-        <Image source={require("../../assets/images/Logo.png")} style={styles.image} />
-        <Text style={styles.title}>Bem-vindo ao Do It, Girl!</Text>
-        <Text style={styles.subtitle}>Acesse sua conta para continuar       </Text>
+      <ScrollView
+        contentContainerStyle={styles.scrollContent}
+        keyboardShouldPersistTaps="handled"
+      >
+        <View style={styles.content}>
+          <Image source={require("../../assets/images/Logo.png")} style={styles.image} />
+          <Text style={styles.title}>Bem-vindo ao Do It, Girl!</Text>
+          <Text style={styles.subtitle}>Acesse sua conta para continuar       </Text>
         <Text style={styles.username}>username:</Text>
         <TextInput
           style={styles.input}
@@ -62,15 +91,27 @@ export default function LoginScreen() {
         />
 
         <Text style={styles.senha}>senha:</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="insira sua senha"
-          value={password}
-          onChangeText={setPassword}
-          secureTextEntry
-          autoCapitalize="none"
-          editable={!loading}
-        />
+        <View style={styles.passwordContainer}>
+          <TextInput
+            style={styles.passwordInput}
+            placeholder="insira sua senha"
+            value={password}
+            onChangeText={setPassword}
+            secureTextEntry={!showPassword}
+            autoCapitalize="none"
+            editable={!loading}
+          />
+          <TouchableOpacity
+            style={styles.eyeIcon}
+            onPress={() => setShowPassword(!showPassword)}
+          >
+            <Ionicons
+              name={showPassword ? "eye-off" : "eye"}
+              size={24}
+              color="#F79489"
+            />
+          </TouchableOpacity>
+        </View>
 
         <TouchableOpacity
           style={[styles.button, loading && styles.buttonDisabled]}
@@ -97,6 +138,7 @@ export default function LoginScreen() {
           </TouchableOpacity>
         </Link>
       </View>
+      </ScrollView>
     </KeyboardAvoidingView>
   );
 }
@@ -105,6 +147,9 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#F79489",
+  },
+  scrollContent: {
+    flexGrow: 1,
   },
   content: {
     flex: 1,
@@ -132,10 +177,12 @@ const styles = StyleSheet.create({
   username: {
     fontSize: 16,
     color: "#fff",
+    fontWeight: "bold",
   },
   senha: {
     fontSize: 16,
     color: "#fff",
+    fontWeight: "bold",
   },
   input: {
     backgroundColor: "#FADCD9",
@@ -146,6 +193,24 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     color: "#F79489",
     borderColor: "#ddd",
+  },
+  passwordContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#FADCD9",
+    borderRadius: 8,
+    marginBottom: 15,
+    borderWidth: 1,
+    borderColor: "#ddd",
+  },
+  passwordInput: {
+    flex: 1,
+    padding: 15,
+    fontSize: 16,
+    color: "#F79489",
+  },
+  eyeIcon: {
+    padding: 15,
   },
   button: {
     backgroundColor: "#FADCD9",

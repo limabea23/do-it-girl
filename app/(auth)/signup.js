@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import {
   View,
+  Image,
   Text,
   TextInput,
   TouchableOpacity,
@@ -12,54 +13,68 @@ import {
   ScrollView,
 } from "react-native";
 import { useAuth } from "../../contexts/AuthContext";
-import { useRouter } from "expo-router";
+import { Link } from "expo-router";
+import { z } from "zod";
+
+const registerSchema = z.object({
+  username: z.string().min(1, "O username é obrigatório"),
+  email: z.string().min(1, "O email é obrigatório"),
+  password: z.string().min(6, "A senha deve ter pelo menos 6 caracteres"),
+  confirmPassword: z.string().min(1, "Campo confirmar senha obrigatório"),
+}).refine((data) => data.password === data.confirmPassword, {
+  message: "As senhas não coincidem",
+  path: ["confirmPassword"],
+});
 
 export default function RegisterScreen() {
-  const [name, setName] = useState("");
+  const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [errors, setErrors] = useState({});
   const { signUp } = useAuth();
-  const router = useRouter();
 
   const handleRegister = async () => {
-    if (!name || !email || !password || !confirmPassword) {
-      Alert.alert("Erro", "Preencha todos os campos");
-      return;
-    }
+    setErrors({});
 
-    if (password.length < 6) {
-      Alert.alert("Erro", "A senha deve ter pelo menos 6 caracteres");
-      return;
-    }
-
-    if (password !== confirmPassword) {
-      Alert.alert("Erro", "As senhas não coincidem");
-      return;
-    }
-
-    // Validação básica de email
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      Alert.alert("Erro", "Email inválido");
-      return;
-    }
-
-    setLoading(true);
     try {
-      const result = await signUp(name, email, password);
+      const validatedData = registerSchema.parse({
+        username,
+        email,
+        password,
+        confirmPassword,
+      });
 
-      if (result.success) {
-        Alert.alert("Sucesso", "Conta criada com sucesso!", [{ text: "OK" }]);
-        // O AuthContext já redireciona automaticamente
-      } else {
-        Alert.alert("Erro", result.message || "Falha ao criar conta");
+      setLoading(true);
+      try {
+        const result = await signUp(validatedData.username, validatedData.email, validatedData.password);
+
+        if (!result.success) {
+          window.alert(result.message || "Falha ao criar conta");
+        }
+      } catch (error) {
+        window.alert("Falha ao criar conta");
+      } finally {
+        setLoading(false);
       }
     } catch (error) {
-      Alert.alert("Erro", "Falha ao criar conta");
-    } finally {
-      setLoading(false);
+      if (error instanceof z.ZodError) {
+        const newErrors = {};
+        error.errors.forEach((err) => {
+          newErrors[err.path[0]] = err.message;
+        });
+        setErrors(newErrors);
+
+        const allEmpty = !username && !email && !password && !confirmPassword;
+        
+        if (allEmpty) {
+          window.alert("Todos os campos são obrigatórios");
+        } else {
+          const firstError = Object.values(newErrors)[0];
+          window.alert(firstError);
+        }
+      }
     }
   };
 
@@ -73,22 +88,24 @@ export default function RegisterScreen() {
         keyboardShouldPersistTaps="handled"
       >
         <View style={styles.content}>
-          <Text style={styles.emoji}>✨</Text>
-          <Text style={styles.title}>Criar Conta</Text>
-          <Text style={styles.subtitle}>Preencha os dados abaixo</Text>
+          <Image source={require("../../assets/images/Logo.png")} style={styles.image} />
+          <Text style={styles.title}>Crie sua conta</Text>
+          <Text style={styles.subtitle}>Entre para o Do It, Girl!</Text>
 
+          <Text style={styles.label}>username:</Text>
           <TextInput
             style={styles.input}
-            placeholder="Nome completo"
-            value={name}
-            onChangeText={setName}
+            placeholder="insira seu username"
+            value={username}
+            onChangeText={setUsername}
             autoCapitalize="words"
             editable={!loading}
           />
 
+          <Text style={styles.label}>email:</Text>
           <TextInput
             style={styles.input}
-            placeholder="Email"
+            placeholder="insira seu email"
             value={email}
             onChangeText={setEmail}
             keyboardType="email-address"
@@ -97,9 +114,10 @@ export default function RegisterScreen() {
             editable={!loading}
           />
 
+          <Text style={styles.label}>senha:</Text>
           <TextInput
             style={styles.input}
-            placeholder="Senha (mínimo 6 caracteres)"
+            placeholder="insira sua senha (mínimo 6 caracteres)"
             value={password}
             onChangeText={setPassword}
             secureTextEntry
@@ -107,9 +125,10 @@ export default function RegisterScreen() {
             editable={!loading}
           />
 
+          <Text style={styles.label}>confirmar senha:</Text>
           <TextInput
             style={styles.input}
-            placeholder="Confirmar senha"
+            placeholder="confirme sua senha"
             value={confirmPassword}
             onChangeText={setConfirmPassword}
             secureTextEntry
@@ -129,13 +148,18 @@ export default function RegisterScreen() {
             )}
           </TouchableOpacity>
 
-          <TouchableOpacity
-            style={styles.backButton}
-            onPress={() => router.back()}
-            disabled={loading}
-          >
-            <Text style={styles.backText}>← Voltar para login</Text>
-          </TouchableOpacity>
+          <View style={styles.registerContainer}>
+            <Text style={styles.registerText}>já possui conta?</Text>
+          </View>
+
+          <Link href="/(auth)/signin" asChild>
+            <TouchableOpacity
+              style={styles.signinButton}
+              disabled={loading}
+            >
+              <Text style={styles.signinButtonText}>Entrar</Text>
+            </TouchableOpacity>
+          </Link>
         </View>
       </ScrollView>
     </KeyboardAvoidingView>
@@ -145,7 +169,7 @@ export default function RegisterScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#f5f5f5",
+    backgroundColor: "#F79489",
   },
   scrollContent: {
     flexGrow: 1,
@@ -154,61 +178,82 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     padding: 20,
-    paddingTop: 60,
-    paddingBottom: 40,
   },
-  emoji: {
-    fontSize: 60,
-    textAlign: "center",
-    marginBottom: 20,
+  image: {
+    width: 250,
+    height: 250,
+    alignSelf: "center",
   },
   title: {
-    fontSize: 32,
+    fontSize: 28,
     fontWeight: "bold",
-    color: "#333",
+    color: "#ffff",
     marginBottom: 8,
     textAlign: "center",
   },
   subtitle: {
     fontSize: 16,
-    color: "#666",
+    color: "#fff",
     marginBottom: 40,
     textAlign: "center",
   },
+  label: {
+    fontSize: 16,
+    color: "#fff",
+    fontWeight: "bold",
+  },
   input: {
-    backgroundColor: "#fff",
+    backgroundColor: "#FADCD9",
     borderRadius: 8,
     padding: 15,
     marginBottom: 15,
     fontSize: 16,
     borderWidth: 1,
     borderColor: "#ddd",
+    color: "#F79489",
   },
   button: {
-    backgroundColor: "#007AFF",
+    backgroundColor: "#FADCD9",
     borderRadius: 8,
-    padding: 15,
+    padding: 10,
     alignItems: "center",
     marginTop: 10,
-    minHeight: 50,
     justifyContent: "center",
+    width: 150,
+    alignSelf: "center",
   },
   buttonDisabled: {
     opacity: 0.6,
   },
   buttonText: {
-    color: "#fff",
-    fontSize: 16,
+    color: "#F79489",
+    fontSize: 15,
     fontWeight: "bold",
   },
-  backButton: {
+  registerContainer: {
+    flexDirection: "row",
+    justifyContent: "center",
     marginTop: 20,
     alignItems: "center",
-    padding: 10,
   },
-  backText: {
-    color: "#007AFF",
+  registerText: {
+    color: "#ffffffff",
     fontSize: 14,
+    textAlign: "center",
+  },
+  signinButton: {
+    backgroundColor: "#FADCD9",
+    borderRadius: 8,
+    padding: 10,
+    alignItems: "center",
+    marginTop: 10,
+    justifyContent: "center",
+    width: 150,
+    alignSelf: "center",
+  },
+  signinButtonText: {
+    color: "#F79489",
+    fontSize: 15,
     fontWeight: "bold",
   },
 });
