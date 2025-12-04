@@ -10,7 +10,7 @@ export default function HomeScreen() {
       <View style={styles.content}>
         <Text style={styles.emoji}>👋</Text>
         <Text style={styles.title}>Bem-vindo(a)!</Text>
-        <Text style={styles.userName}>{user?.name}</Text>
+        <Text style={styles.userName}>{user?.username}</Text>
 
         <View style={styles.card}>
           <Text style={styles.cardTitle}>✅ Você está autenticado!</Text>
