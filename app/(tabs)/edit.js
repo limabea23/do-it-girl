@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   View,
   Text,
@@ -9,12 +9,13 @@ import {
   TextInput,
   Platform,
 } from "react-native";
+import DateTimePicker from "@react-native-community/datetimepicker";
 
 export default function EditScreen() {
-  const tarefa = {
+  const [tarefa, setTarefa] = useState({
     title: "Estudar Geografia",
-    date: "25/11/2025",
-    time: "14:40h",
+    date: new Date(),
+    time: new Date(),
     list: "Escola",
     priority: "Alta",
     description: "",
@@ -23,17 +24,27 @@ export default function EditScreen() {
       { id: 1, text: "Prespuricar marcas", done: true },
       { id: 2, text: "Ir na loja de cosméticos", done: true },
     ],
-  };
+  });
+
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [showTimePicker, setShowTimePicker] = useState(false);
 
   const handleConcluir = () => {
-    Alert.alert(
-      "Concluir Tarefa",
-      "Deseja marcar esta tarefa como concluída?",
-      [
-        { text: "Cancelar", style: "cancel" },
-        { text: "Sim", onPress: () => Alert.alert("Tarefa concluída") },
-      ]
-    );
+    Alert.alert("Tarefa concluída!", "Sua tarefa foi marcada como concluída.");
+  };
+
+  const handleDateChange = (event, selectedDate) => {
+    setShowDatePicker(false);
+    if (selectedDate) {
+      setTarefa((prev) => ({ ...prev, date: selectedDate }));
+    }
+  };
+
+  const handleTimeChange = (event, selectedTime) => {
+    setShowTimePicker(false);
+    if (selectedTime) {
+      setTarefa((prev) => ({ ...prev, time: selectedTime }));
+    }
   };
 
   return (
@@ -54,23 +65,40 @@ export default function EditScreen() {
 
           <View style={styles.infoRow}>
             <Text style={styles.infoLabel}>Data:</Text>
-            <Text style={styles.infoValue}>{tarefa.date}</Text>
+            <TouchableOpacity onPress={() => setShowDatePicker(true)}>
+              <Text style={styles.infoValue}>
+                {tarefa.date.toLocaleDateString()}
+              </Text>
+            </TouchableOpacity>
           </View>
+          {showDatePicker && (
+            <DateTimePicker
+              value={tarefa.date}
+              mode="date"
+              display="default"
+              onChange={handleDateChange}
+            />
+          )}
 
           <View style={styles.infoRow}>
             <Text style={styles.infoLabel}>Hora:</Text>
-            <Text style={styles.infoValue}>{tarefa.time}</Text>
+            <TouchableOpacity onPress={() => setShowTimePicker(true)}>
+              <Text style={styles.infoValue}>
+                {tarefa.time.toLocaleTimeString([], {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })}
+              </Text>
+            </TouchableOpacity>
           </View>
-
-          <View style={styles.infoRow}>
-            <Text style={styles.infoLabel}>Lista:</Text>
-            <Text style={styles.infoValue}>{tarefa.list}</Text>
-          </View>
-
-          <View style={styles.infoRow}>
-            <Text style={styles.infoLabel}>Prioridade:</Text>
-            <Text style={styles.infoValue}>{tarefa.priority}</Text>
-          </View>
+          {showTimePicker && (
+            <DateTimePicker
+              value={tarefa.time}
+              mode="time"
+              display="default"
+              onChange={handleTimeChange}
+            />
+          )}
 
           <Text style={styles.fieldLabel}>Descrição</Text>
           <TextInput
