@@ -140,32 +140,32 @@ export default function List() {
                 </ScrollView>
             </View>
         </SafeAreaView>
-    )
+    );
 }
 
 const styles = StyleSheet.create({
     safe: {
         flex: 1,
-        backgroundColor: '#e6eef0',
-        alignItems: 'center',
+        backgroundColor: "#e6eef0",
+        alignItems: "center",
     },
     panel: {
-        width: '92%',
-        backgroundColor: '#f39b97',
+        width: "92%",
+        backgroundColor: "#f39b97",
         borderRadius: 8,
         paddingVertical: 18,
         paddingHorizontal: 14,
         marginTop: 12,
         flex: 1,
-        alignSelf: 'center',
+        alignSelf: "center",
     },
     content: {
         paddingBottom: 30,
     },
     title: {
         fontSize: 26,
-        color: '#fff',
-        textAlign: 'center',
+        color: "#fff",
+        textAlign: "center",
         marginBottom: 18,
         fontWeight: '600',
     },
@@ -182,25 +182,25 @@ const styles = StyleSheet.create({
         fontWeight: '600',
     },
     input: {
-        backgroundColor: '#f6c0c0',
-        width: '90%',
-        alignSelf: 'center',
+        backgroundColor: "#f6c0c0",
+        width: "90%",
+        alignSelf: "center",
         paddingVertical: 10,
         paddingHorizontal: 14,
         borderRadius: 12,
-        color: '#6b3f3f',
+        color: "#6b3f3f",
         marginBottom: 10,
         fontSize: 15,
     },
     card: {
-        backgroundColor: '#f6cfcf',
+        backgroundColor: "#f6cfcf",
         paddingVertical: 12,
         paddingHorizontal: 14,
         borderRadius: 12,
         marginVertical: 8,
-        width: '90%',
-        alignSelf: 'center',
-        shadowColor: '#000',
+        width: "90%",
+        alignSelf: "center",
+        shadowColor: "#000",
         shadowOffset: { width: 0, height: 1 },
         shadowOpacity: 0.12,
         shadowRadius: 4,
@@ -233,4 +233,4 @@ const styles = StyleSheet.create({
     bottomSpacing: {
         height: 24,
     },
-})
+});
