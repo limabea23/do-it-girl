@@ -96,8 +96,8 @@ export default function List() {
 
     return (
         <SafeAreaView style={styles.safe}>
-            <View style={styles.panel}>
-                <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+            <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+                <View style={styles.panel}>
                     <Text style={styles.title}>Minha Lista e Tarefas!</Text>
 
                     <TouchableOpacity style={styles.primaryButton} onPress={handleCreatePress}>
@@ -137,8 +137,8 @@ export default function List() {
                     )}
 
                     <View style={styles.bottomSpacing} />
-                </ScrollView>
-            </View>
+                </View>
+            </ScrollView>
         </SafeAreaView>
     );
 }
@@ -146,21 +146,19 @@ export default function List() {
 const styles = StyleSheet.create({
     safe: {
         flex: 1,
-        backgroundColor: "#e6eef0",
-        alignItems: "center",
+        backgroundColor: '#f39b97',
     },
     panel: {
-        width: "92%",
-        backgroundColor: "#f39b97",
-        borderRadius: 8,
-        paddingVertical: 18,
-        paddingHorizontal: 14,
-        marginTop: 12,
         flex: 1,
-        alignSelf: "center",
+        backgroundColor: '#f39b97',
+        paddingVertical: 8,
+        width: '100%',
     },
     content: {
-        paddingBottom: 30,
+        flexGrow: 1,
+        paddingVertical: 26,
+        paddingHorizontal: 22,
+        paddingBottom: 40,
     },
     title: {
         fontSize: 26,

@@ -24,25 +24,26 @@ export default function CreateTaskScreen() {
     setSubtasks((current) => current.filter((_, i) => i !== index));
   };
 
-  const handleSaveTask = () => {
-    const trimmedTitle = title.trim();
-    if (!trimmedTitle) {
-      Alert.alert('Aviso', 'Informe um título para a tarefa.');
-      return;
-    }
-    if (!category) {
-      Alert.alert('Aviso', 'Selecione uma categoria.');
-      return;
-    }
-    addTask({
-      title: trimmedTitle,
-      subtasks,
-      listName: category,
-      goal: goal.trim(),
-      priority: priority.trim(),
-    });
-    navigation.goBack();
-  };
+	const handleSaveTask = () => {
+		const trimmedTitle = title.trim()
+		if (!trimmedTitle) {
+			Alert.alert('Aviso', 'Informe um titulo para a tarefa.')
+			return
+		}
+
+		const createdTask = addTask({
+			title: trimmedTitle,
+			date: date.trim(),
+			time: time.trim(),
+			listName: listName.trim(),
+			priority: priority.trim(),
+			description: description.trim(),
+			goal: goal.trim(),
+			subtasks,
+		})
+
+		navigation.navigate('edit', { taskId: createdTask.id })
+	}
 
   return (
     <SafeAreaView style={styles.safe}>
@@ -129,135 +130,109 @@ export default function CreateTaskScreen() {
 }
 
 const styles = StyleSheet.create({
-  safe: {
-    flex: 1,
-    backgroundColor: '#e6eef0',
-  },
-  panel: {
-    backgroundColor: '#f39b97',
-    marginHorizontal: '4%',
-    borderRadius: 12,
-    padding: 18,
-    marginTop: 40,
-  },
-  heading: {
-    fontSize: 24,
-    color: '#fff',
-    textAlign: 'center',
-    marginBottom: 16,
-    fontWeight: '600',
-  },
-  input: {
-    backgroundColor: '#f6c0c0',
-    paddingVertical: 10,
-    paddingHorizontal: 14,
-    borderRadius: 12,
-    color: '#6b3f3f',
-    marginBottom: 10,
-    fontSize: 15,
-  },
-  label: {
-    color: '#fff',
-    fontWeight: '600',
-    marginBottom: 4,
-    marginTop: 10,
-    fontSize: 15,
-  },
-  categoryRow: {
-    flexDirection: 'row',
-    marginBottom: 10,
-    gap: 8,
-  },
-  categoryChip: {
-    backgroundColor: '#f6cfcf',
-    borderRadius: 16,
-    paddingVertical: 6,
-    paddingHorizontal: 16,
-    marginRight: 8,
-  },
-  categoryChipSelected: {
-    backgroundColor: '#a13d3a',
-  },
-  categoryChipText: {
-    color: '#a13d3a',
-    fontWeight: '600',
-  },
-  categoryChipTextSelected: {
-    color: '#fff',
-  },
-  metaInput: {
-    borderWidth: 1,
-    borderColor: '#a13d3a',
-    backgroundColor: '#fbeee6',
-  },
-  priorityInput: {
-    borderWidth: 1,
-    borderColor: '#f39b97',
-    backgroundColor: '#fbeee6',
-  },
-  subtaskHeader: {
-    marginTop: 12,
-  },
-  subtaskTitle: {
-    color: '#fff',
-    fontSize: 18,
-    fontWeight: '600',
-    marginBottom: 8,
-  },
-  subtaskRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  subtaskInput: {
-    flex: 1,
-    marginBottom: 0,
-    marginRight: 8,
-  },
-  addButton: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: '#f6cfcf',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  addButtonText: {
-    color: '#6b3f3f',
-    fontSize: 24,
-    fontWeight: '600',
-  },
-  subtaskList: {
-    marginTop: 12,
-    backgroundColor: '#f6cfcf',
-    borderRadius: 12,
-    padding: 12,
-  },
-  subtaskItem: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingVertical: 6,
-  },
-  subtaskText: {
-    color: '#6b3f3f',
-    fontSize: 15,
-    flex: 1,
-    marginRight: 8,
-  },
-  removeText: {
-    color: '#a13d3a',
-    fontWeight: '500',
-  },
-  saveButton: {
-    marginTop: 18,
-    backgroundColor: '#f6cfcf',
-    paddingVertical: 14,
-    borderRadius: 12,
-    alignItems: 'center',
-  },
-  saveButtonText: {
-    color: '#6b3f3f',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-});
+	safe: {
+		flex: 1,
+		backgroundColor: '#e6eef0',
+	},
+	content: {
+		paddingVertical: 18,
+	},
+	panel: {
+		backgroundColor: '#f39b97',
+		marginHorizontal: '4%',
+		borderRadius: 12,
+		padding: 18,
+	},
+	heading: {
+		fontSize: 24,
+		color: '#fff',
+		textAlign: 'center',
+		marginBottom: 16,
+		fontWeight: '600',
+	},
+	input: {
+		backgroundColor: '#f6c0c0',
+		paddingVertical: 10,
+		paddingHorizontal: 14,
+		borderRadius: 12,
+		color: '#6b3f3f',
+		marginBottom: 10,
+		fontSize: 15,
+	},
+	multiline: {
+		minHeight: 80,
+		textAlignVertical: 'top',
+	},
+	inlineGroup: {
+		flexDirection: 'row',
+		justifyContent: 'space-between',
+	},
+	halfInput: {
+		flex: 1,
+	},
+	subtaskHeader: {
+		marginTop: 12,
+	},
+	subtaskTitle: {
+		color: '#fff',
+		fontSize: 18,
+		fontWeight: '600',
+		marginBottom: 8,
+	},
+	subtaskRow: {
+		flexDirection: 'row',
+		alignItems: 'center',
+	},
+	subtaskInput: {
+		flex: 1,
+		marginBottom: 0,
+		marginRight: 8,
+	},
+	addButton: {
+		width: 44,
+		height: 44,
+		borderRadius: 22,
+		backgroundColor: '#f6cfcf',
+		alignItems: 'center',
+		justifyContent: 'center',
+	},
+	addButtonText: {
+		color: '#6b3f3f',
+		fontSize: 24,
+		fontWeight: '600',
+	},
+	subtaskList: {
+		marginTop: 12,
+		backgroundColor: '#f6cfcf',
+		borderRadius: 12,
+		padding: 12,
+	},
+	subtaskItem: {
+		flexDirection: 'row',
+		justifyContent: 'space-between',
+		alignItems: 'center',
+		paddingVertical: 6,
+	},
+	subtaskText: {
+		color: '#6b3f3f',
+		fontSize: 15,
+		flex: 1,
+		marginRight: 8,
+	},
+	removeText: {
+		color: '#a13d3a',
+		fontWeight: '500',
+	},
+	saveButton: {
+		marginTop: 18,
+		backgroundColor: '#f6cfcf',
+		paddingVertical: 14,
+		borderRadius: 12,
+		alignItems: 'center',
+	},
+	saveButtonText: {
+		color: '#6b3f3f',
+		fontSize: 16,
+		fontWeight: '600',
+	},
+})

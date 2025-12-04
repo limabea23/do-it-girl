@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
 	SafeAreaView,
 	ScrollView,
@@ -74,12 +74,44 @@ export default function EditTaskScreen() {
 	const [description, setDescription] = useState(task?.description || '')
 	const [goal, setGoal] = useState(task?.goal || '')
 	const [completed, setCompleted] = useState(task?.completed || false)
+	const [statusMessage, setStatusMessage] = useState('')
+	const feedbackTimer = useRef(null)
+
+	const showFeedback = useCallback((message) => {
+		setStatusMessage(message)
+		if (feedbackTimer.current) {
+			clearTimeout(feedbackTimer.current)
+		}
+		feedbackTimer.current = setTimeout(() => {
+			setStatusMessage('')
+			feedbackTimer.current = null
+		}, 2500)
+	}, [])
 
 	useEffect(() => {
 		setDescription(task?.description || '')
 		setGoal(task?.goal || '')
 		setCompleted(task?.completed || false)
 	}, [task?.id, task?.description, task?.goal, task?.completed])
+
+	useEffect(() => {
+		if (route.params?.feedback) {
+			const message =
+				route.params.feedback === 'created'
+					? 'Tarefa criada com sucesso!'
+					: String(route.params.feedback)
+			showFeedback(message)
+			navigation.setParams({ feedback: undefined })
+		}
+	}, [route.params?.feedback, navigation, showFeedback])
+
+	useEffect(() => {
+		return () => {
+			if (feedbackTimer.current) {
+				clearTimeout(feedbackTimer.current)
+			}
+		}
+	}, [])
 
 	if (!task) {
 		return (
@@ -102,6 +134,7 @@ export default function EditTaskScreen() {
 		if (taskFromContext) {
 			updateTask(taskFromContext.id, { completed: next })
 		}
+		showFeedback(next ? 'Tarefa concluida!' : 'Tarefa reaberta.')
 	}
 
 	const handleSaveInfo = () => {
@@ -111,11 +144,13 @@ export default function EditTaskScreen() {
 				goal: goal.trim(),
 			})
 		}
+		showFeedback('Informacoes salvas!')
 	}
 
 	const handleSubtaskToggle = (subtaskId) => {
 		if (taskFromContext) {
 			toggleSubtask(taskFromContext.id, subtaskId)
+			showFeedback('Subtarefa atualizada!')
 		}
 	}
 
@@ -123,12 +158,19 @@ export default function EditTaskScreen() {
 		<SafeAreaView style={styles.safe}>
 			<ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
 				<View style={styles.panel}>
+					<Text style={styles.topTitle}>Minha Lista e Tarefas!</Text>
 					<View style={styles.headerRow}>
 						<TouchableOpacity onPress={() => navigation.navigate('list')}>
 							<Text style={styles.backSymbol}>{'<'}</Text>
 						</TouchableOpacity>
 						<Text style={styles.headerTitle}>Editar tarefa</Text>
 					</View>
+
+					{statusMessage ? (
+						<View style={styles.feedbackBanner}>
+							<Text style={styles.feedbackText}>{statusMessage}</Text>
+						</View>
+					) : null}
 
 					<TouchableOpacity style={styles.completeButton} onPress={handleToggleComplete}>
 						<Text style={styles.completeButtonText}>
@@ -147,7 +189,7 @@ export default function EditTaskScreen() {
 					</View>
 
 					<View style={styles.section}>
-						<Text style={styles.fieldLabel}>Descricao</Text>
+						<Text style={styles.fieldLabel}>Descrição</Text>
 						<TextInput
 							value={description}
 							onChangeText={setDescription}
@@ -171,7 +213,7 @@ export default function EditTaskScreen() {
 					</View>
 
 					<TouchableOpacity style={styles.saveButton} onPress={handleSaveInfo}>
-						<Text style={styles.saveButtonText}>Salvar informacoes</Text>
+						<Text style={styles.saveButtonText}>Salvar informações</Text>
 					</TouchableOpacity>
 
 					<View style={styles.section}>
@@ -200,16 +242,26 @@ export default function EditTaskScreen() {
 const styles = StyleSheet.create({
 	safe: {
 		flex: 1,
-		backgroundColor: '#e6eef0',
+		backgroundColor: '#f39b97',
 	},
 	scrollContent: {
-		paddingVertical: 18,
+		flexGrow: 1,
+		paddingVertical: 26,
+		paddingHorizontal: 22,
 	},
 	panel: {
+		flex: 1,
 		backgroundColor: '#f39b97',
-		marginHorizontal: '4%',
-		borderRadius: 12,
-		padding: 18,
+		borderRadius: 0,
+		paddingVertical: 6,
+		width: '100%',
+	},
+	topTitle: {
+		color: '#fff',
+		fontSize: 26,
+		fontWeight: '700',
+		textAlign: 'center',
+		marginBottom: 12,
 	},
 	headerRow: {
 		flexDirection: 'row',
@@ -341,5 +393,18 @@ const styles = StyleSheet.create({
 	backButtonText: {
 		color: '#fff',
 		fontWeight: '600',
+	},
+	feedbackBanner: {
+		backgroundColor: '#f6cfcf',
+		borderRadius: 12,
+		paddingVertical: 10,
+		paddingHorizontal: 12,
+		marginBottom: 14,
+	},
+	feedbackText: {
+		color: '#6b3f3f',
+		fontSize: 14,
+		fontWeight: '600',
+		textAlign: 'center',
 	},
 })
