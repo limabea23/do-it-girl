@@ -23,6 +23,27 @@ export default function TabsLayout() {
         }}
       />
       <Tabs.Screen
+        name="list"
+        options={{
+          title: "Tarefas",
+          tabBarIcon: ({ color }) => <Text style={{ fontSize: 24 }}>📝</Text>,
+        }}
+      />
+      <Tabs.Screen
+        name="create"
+        options={{
+          title: "Criar",
+          tabBarButton: () => null,
+        }}
+      />
+      <Tabs.Screen
+        name="edit"
+        options={{
+          title: "Editar",
+          tabBarIcon: ({ color }) => <Text style={{ fontSize: 24 }}>✏️</Text>,
+        }}
+      />
+      <Tabs.Screen
         name="profile"
         options={{
           title: "Perfil",

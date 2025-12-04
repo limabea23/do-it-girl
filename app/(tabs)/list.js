@@ -1,83 +1,142 @@
-import React, { useState } from 'react'
-import { 
-    SafeAreaView, View, Text, ScrollView, 
-    TouchableOpacity, StyleSheet, TextInput 
+import React, { useMemo, useState } from 'react'
+import {
+    SafeAreaView,
+    View,
+    Text,
+    ScrollView,
+    TouchableOpacity,
+    StyleSheet,
+    TextInput,
 } from 'react-native'
+import { useNavigation } from '@react-navigation/native'
 
-const items = [
-    { id: '1', text: 'Passar tônico e hidratante facial', icon: '' },
-    { id: '2', text: 'Fazer unhas', icon: '✏️' },
-    { id: '3', text: 'Fazer máscara no cabelo', icon: '♡' },
-    { id: '4', text: 'Fazer o trabalho da escola', icon: '📄' },
-    { id: '5', text: 'Fazer skincare noturno', icon: '' },
-    { id: '6', text: 'Ler um capítulo do meu livro favorito', icon: '📚' },
-	{ id: '7', text: 'Organizar meu espaço de estudo', icon: '🧹' },
-	{ id: '8', text: 'Praticar meditação por 10 minutos', icon: '🧘‍♀️' },
-	{ id: '9', text: 'Planejar minhas refeições da semana', icon: '🍎' },
-	{ id: '10', text: 'Fazer uma caminhada ao ar livre', icon: '🚶‍♀️' },
-	{ id: '11', text: 'Assistir a um documentário interessante', icon: '🎥' },
-	{ id: '12', text: 'Experimentar uma nova receita saudável', icon: '🍳' },
-	{ id: '13', text: 'Escrever no meu diário de gratidão', icon: '📝' },
-	{ id: '14', text: 'Fazer alongamentos matinais', icon: '🤸‍♀️' },
-	{ id: '15', text: 'Ouvir meu podcast favorito', icon: '🎧' },
-	{ id: '16', text: 'Planejar uma atividade divertida para o fim de semana', icon: '🎉' },
-	{ id: '17', text: 'Fazer uma videochamada com um amigo', icon: '📱' },
-	{ id: '18', text: 'Organizar minhas fotos no celular', icon: '📸' },
-	{ id: '19', text: 'Fazer uma limpeza geral no quarto', icon: '🛏️' },
-	{ id: '20', text: 'Praticar um hobby criativo', icon: '🎨' },
-	{ id: '21', text: 'Planejar meus objetivos para o próximo mês', icon: '📅' },
-	{ id: '22', text: 'Fazer uma pausa para um chá ou café', icon: '☕' },
-	{ id: '23', text: 'Assistir a um filme inspirador', icon: '🍿' },
-	{ id: '24', text: 'Fazer exercícios de respiração profunda', icon: '🌬️' },
-	{ id: '25', text: 'Escrever uma carta para alguém especial', icon: '💌' },
-    { id: '26', text: 'Revisar minhas finanças pessoais', icon: '💰' },
-	{ id: '27', text: 'Fazer um planejamento semanal', icon: '🗓️' },
-	{ id: '28', text: 'Experimentar uma nova atividade física', icon: '🏋️‍♀️' },
-	{ id: '29', text: 'Fazer uma lista de coisas pelas quais sou grata', icon: '🙏' },
-	{ id: '30', text: 'Desconectar das redes sociais por um dia', icon: '📵' },
-	{ id: '31', text: 'Fazer um piquenique no parque', icon: '🧺' },
-]
+import { useTasks } from '../../contexts/TaskContext'
+
+const formatDate = (value) => {
+    if (!value) {
+        return 'Sem data'
+    }
+
+    if (/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+        const year = value.slice(0, 4)
+        const month = value.slice(5, 7)
+        const day = value.slice(8, 10)
+        return `${day}/${month}/${year}`
+    }
+
+    const parsed = new Date(value)
+    if (Number.isNaN(parsed.getTime())) {
+        return value
+    }
+
+    const day = String(parsed.getDate()).padStart(2, '0')
+    const month = String(parsed.getMonth() + 1).padStart(2, '0')
+    const year = parsed.getFullYear()
+    return `${day}/${month}/${year}`
+}
+
+const formatTime = (value) => {
+    if (!value) {
+        return 'Sem horario'
+    }
+
+    if (/^\d{2}:\d{2}$/.test(value)) {
+        return value
+    }
+
+    const parsed = new Date(value)
+    if (Number.isNaN(parsed.getTime())) {
+        return value
+    }
+
+    const hours = String(parsed.getHours()).padStart(2, '0')
+    const minutes = String(parsed.getMinutes()).padStart(2, '0')
+    return `${hours}:${minutes}`
+}
 
 export default function List() {
-    const [search, setSearch] = useState("")
+    const [search, setSearch] = useState('')
+    const navigation = useNavigation()
+    const { tasks } = useTasks()
 
-    // aplica filtro
-    const filtered = items.filter((item) =>
-        item.text.toLowerCase().includes(search.toLowerCase())
-    )
+    const sortedTasks = useMemo(() => {
+        return [...tasks].sort((a, b) => {
+            if (a.createdAt > b.createdAt) {
+                return -1
+            }
+            if (a.createdAt < b.createdAt) {
+                return 1
+            }
+            return 0
+        })
+    }, [tasks])
+
+    const filtered = useMemo(() => {
+        const term = search.trim().toLowerCase()
+        if (!term) {
+            return sortedTasks
+        }
+
+        return sortedTasks.filter((task) => {
+            const text = [task.title, task.listName, task.priority]
+                .filter(Boolean)
+                .join(' ')
+                .toLowerCase()
+            return text.includes(term)
+        })
+    }, [sortedTasks, search])
+
+    const handleTaskPress = (task) => {
+        navigation.navigate('edit', { taskId: task.id })
+    }
+
+    const handleCreatePress = () => {
+        navigation.navigate('create')
+    }
 
     return (
         <SafeAreaView style={styles.safe}>
             <View style={styles.panel}>
                 <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-                    
                     <Text style={styles.title}>Minha Lista e Tarefas!</Text>
 
-                    {/* Campo de busca */}
+                    <TouchableOpacity style={styles.primaryButton} onPress={handleCreatePress}>
+                        <Text style={styles.primaryButtonText}>Criar nova tarefa</Text>
+                    </TouchableOpacity>
+
                     <TextInput
-                        placeholder="Buscar tarefa..."
+                        placeholder="Buscar tarefa"
                         placeholderTextColor="#ffdede"
                         style={styles.input}
                         value={search}
                         onChangeText={setSearch}
                     />
 
-                    {filtered.map((item) => (
-                        <TouchableOpacity key={item.id} style={styles.card} activeOpacity={0.8}>
-                            <Text style={styles.cardText}>
-                                {item.icon ? item.icon + '  ' : ''}
-                                {item.text}
-                            </Text>
-                        </TouchableOpacity>
-                    ))}
+                    {filtered.map((task) => {
+                        const subtitleParts = [formatDate(task.date), formatTime(task.time)]
+                        if (task.listName) {
+                            subtitleParts.push(task.listName)
+                        }
+
+                        return (
+                            <TouchableOpacity
+                                key={task.id}
+                                style={[styles.card, task.completed && styles.cardCompleted]}
+                                activeOpacity={0.85}
+                                onPress={() => handleTaskPress(task)}
+                            >
+                                <Text style={styles.cardTitle}>{task.title}</Text>
+                                <Text style={styles.cardSubtitle}>{subtitleParts.join(' • ')}</Text>
+                                {task.priority ? <Text style={styles.cardPriority}>Prioridade: {task.priority}</Text> : null}
+                            </TouchableOpacity>
+                        )
+                    })}
 
                     {filtered.length === 0 && (
-                        <Text style={{ textAlign: 'center', color: '#fff', marginTop: 10 }}>
-                            Nenhuma tarefa encontrada.
-                        </Text>
+                        <Text style={styles.emptyState}>Nenhuma tarefa encontrada.</Text>
                     )}
 
-                    <View style={{ height: 24 }} />
+                    <View style={styles.bottomSpacing} />
                 </ScrollView>
             </View>
         </SafeAreaView>
@@ -108,10 +167,19 @@ const styles = StyleSheet.create({
         color: '#fff',
         textAlign: 'center',
         marginBottom: 18,
-        fontFamily: 'Georgia',
-        textShadowColor: 'rgba(0,0,0,0.15)',
-        textShadowOffset: { width: 0, height: 1 },
-        textShadowRadius: 2,
+        fontWeight: '600',
+    },
+    primaryButton: {
+        backgroundColor: '#f6cfcf',
+        paddingVertical: 11,
+        borderRadius: 12,
+        alignItems: 'center',
+        marginBottom: 12,
+    },
+    primaryButtonText: {
+        color: '#6b3f3f',
+        fontSize: 15,
+        fontWeight: '600',
     },
     input: {
         backgroundColor: '#f6c0c0',
@@ -138,8 +206,31 @@ const styles = StyleSheet.create({
         shadowRadius: 4,
         elevation: 2,
     },
-    cardText: {
+    cardCompleted: {
+        opacity: 0.6,
+    },
+    cardTitle: {
         color: '#6b3f3f',
         fontSize: 16,
+        fontWeight: '600',
+        marginBottom: 4,
+    },
+    cardSubtitle: {
+        color: '#6b3f3f',
+        fontSize: 13,
+    },
+    cardPriority: {
+        color: '#a13d3a',
+        fontSize: 13,
+        marginTop: 6,
+        fontWeight: '500',
+    },
+    emptyState: {
+        textAlign: 'center',
+        color: '#fff',
+        marginTop: 10,
+    },
+    bottomSpacing: {
+        height: 24,
     },
 })

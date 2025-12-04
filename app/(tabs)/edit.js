@@ -1,284 +1,345 @@
-import React, { useState } from "react";
+import React, { useEffect, useMemo, useState } from 'react'
 import {
-  View,
-  Text,
-  TouchableOpacity,
-  StyleSheet,
-  ScrollView,
-  Alert,
-  TextInput,
-  Platform,
-} from "react-native";
-import DateTimePicker from "@react-native-community/datetimepicker";
+	SafeAreaView,
+	ScrollView,
+	View,
+	Text,
+	TouchableOpacity,
+	StyleSheet,
+	TextInput,
+} from 'react-native'
+import { useNavigation, useRoute } from '@react-navigation/native'
 
-export default function EditScreen() {
-  const [tarefa, setTarefa] = useState({
-    title: "Estudar Geografia",
-    date: new Date(),
-    time: new Date(),
-    list: "Escola",
-    priority: "Alta",
-    description: "",
-    goal: "",
-    subtasks: [
-      { id: 1, text: "Prespuricar marcas", done: true },
-      { id: 2, text: "Ir na loja de cosméticos", done: true },
-    ],
-  });
+import { useTasks } from '../../contexts/TaskContext'
 
-  const [showDatePicker, setShowDatePicker] = useState(false);
-  const [showTimePicker, setShowTimePicker] = useState(false);
+const formatDate = (value) => {
+	if (!value) {
+		return 'Sem data'
+	}
 
-  const handleConcluir = () => {
-    Alert.alert("Tarefa concluída!", "Sua tarefa foi marcada como concluída.");
-  };
+	if (/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+		const year = value.slice(0, 4)
+		const month = value.slice(5, 7)
+		const day = value.slice(8, 10)
+		return `${day}/${month}/${year}`
+	}
 
-  const handleDateChange = (event, selectedDate) => {
-    setShowDatePicker(false);
-    if (selectedDate) {
-      setTarefa((prev) => ({ ...prev, date: selectedDate }));
-    }
-  };
+	const parsed = new Date(value)
+	if (Number.isNaN(parsed.getTime())) {
+		return value
+	}
 
-  const handleTimeChange = (event, selectedTime) => {
-    setShowTimePicker(false);
-    if (selectedTime) {
-      setTarefa((prev) => ({ ...prev, time: selectedTime }));
-    }
-  };
-
-  return (
-    <ScrollView style={styles.container}>
-      <View style={styles.content}>
-        <TouchableOpacity style={styles.backBtn}>
-          <Text style={styles.backArrow}>‹</Text>
-        </TouchableOpacity>
-
-        <Text style={styles.header}>Minha Lista e Tarefas!</Text>
-
-        <TouchableOpacity style={styles.finishBtn} onPress={handleConcluir}>
-          <Text style={styles.finishText}>Concluir Tarefa!</Text>
-        </TouchableOpacity>
-
-        <View style={styles.card}>
-          <Text style={styles.title}>{tarefa.title}</Text>
-
-          <View style={styles.infoRow}>
-            <Text style={styles.infoLabel}>Data:</Text>
-            <TouchableOpacity onPress={() => setShowDatePicker(true)}>
-              <Text style={styles.infoValue}>
-                {tarefa.date.toLocaleDateString()}
-              </Text>
-            </TouchableOpacity>
-          </View>
-          {showDatePicker && (
-            <DateTimePicker
-              value={tarefa.date}
-              mode="date"
-              display="default"
-              onChange={handleDateChange}
-            />
-          )}
-
-          <View style={styles.infoRow}>
-            <Text style={styles.infoLabel}>Hora:</Text>
-            <TouchableOpacity onPress={() => setShowTimePicker(true)}>
-              <Text style={styles.infoValue}>
-                {tarefa.time.toLocaleTimeString([], {
-                  hour: "2-digit",
-                  minute: "2-digit",
-                })}
-              </Text>
-            </TouchableOpacity>
-          </View>
-          {showTimePicker && (
-            <DateTimePicker
-              value={tarefa.time}
-              mode="time"
-              display="default"
-              onChange={handleTimeChange}
-            />
-          )}
-
-          <Text style={styles.fieldLabel}>Descrição</Text>
-          <TextInput
-            style={[styles.input, styles.inputMultiline]}
-            placeholder="Digite..."
-            placeholderTextColor="#ffd7d3"
-            defaultValue={tarefa.description}
-            multiline
-          />
-
-          <Text style={styles.fieldLabel}>Meta</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="Digite..."
-            placeholderTextColor="#ffd7d3"
-            defaultValue={tarefa.goal}
-          />
-
-          <Text style={styles.subtasksTitle}>SubTarefas</Text>
-          <View style={styles.subtasks}>
-            {tarefa.subtasks.map((s) => (
-              <View key={s.id} style={styles.subtaskRow}>
-                <View style={[styles.checkbox, s.done && styles.checkboxDone]}>
-                  <Text style={styles.checkmark}>{s.done ? "✓" : ""}</Text>
-                </View>
-                <Text style={styles.subtaskText}>{s.text}</Text>
-              </View>
-            ))}
-          </View>
-        </View>
-
-        <View style={styles.footerSpacer} />
-      </View>
-    </ScrollView>
-  );
+	const day = String(parsed.getDate()).padStart(2, '0')
+	const month = String(parsed.getMonth() + 1).padStart(2, '0')
+	const year = parsed.getFullYear()
+	return `${day}/${month}/${year}`
 }
 
-const COLORS = {
-  bg: "#f79b95",    
-  soft: "#ffd7d6",   
-  card: "#f29a94",   
-  text: "#fff7f7",
-  dark: "#3b2a29",
-};
+const formatTime = (value) => {
+	if (!value) {
+		return 'Sem horario'
+	}
+
+	if (/^\d{2}:\d{2}$/.test(value)) {
+		return value
+	}
+
+	const parsed = new Date(value)
+	if (Number.isNaN(parsed.getTime())) {
+		return value
+	}
+
+	const hours = String(parsed.getHours()).padStart(2, '0')
+	const minutes = String(parsed.getMinutes()).padStart(2, '0')
+	return `${hours}:${minutes}`
+}
+
+export default function EditTaskScreen() {
+	const navigation = useNavigation()
+	const route = useRoute()
+	const { tasks, updateTask, toggleSubtask } = useTasks()
+
+	const taskId = route.params?.taskId || route.params?.tarefa?.id || null
+	const fallbackTask = route.params?.tarefa
+
+	const taskFromContext = useMemo(() => {
+		if (!taskId) {
+			return null
+		}
+		return tasks.find((item) => item.id === taskId) || null
+	}, [tasks, taskId])
+
+	const task = taskFromContext || fallbackTask || null
+
+	const [description, setDescription] = useState(task?.description || '')
+	const [goal, setGoal] = useState(task?.goal || '')
+	const [completed, setCompleted] = useState(task?.completed || false)
+
+	useEffect(() => {
+		setDescription(task?.description || '')
+		setGoal(task?.goal || '')
+		setCompleted(task?.completed || false)
+	}, [task?.id, task?.description, task?.goal, task?.completed])
+
+	if (!task) {
+		return (
+			<SafeAreaView style={styles.safe}>
+				<View style={styles.emptyPanel}>
+					<Text style={styles.emptyText}>Tarefa nao encontrada.</Text>
+					<TouchableOpacity style={styles.backButton} onPress={() => navigation.navigate('list')}>
+						<Text style={styles.backButtonText}>Voltar</Text>
+					</TouchableOpacity>
+				</View>
+			</SafeAreaView>
+		)
+	}
+
+	const subtasks = taskFromContext ? taskFromContext.subtasks : task.subtasks || []
+
+	const handleToggleComplete = () => {
+		const next = !completed
+		setCompleted(next)
+		if (taskFromContext) {
+			updateTask(taskFromContext.id, { completed: next })
+		}
+	}
+
+	const handleSaveInfo = () => {
+		if (taskFromContext) {
+			updateTask(taskFromContext.id, {
+				description: description.trim(),
+				goal: goal.trim(),
+			})
+		}
+	}
+
+	const handleSubtaskToggle = (subtaskId) => {
+		if (taskFromContext) {
+			toggleSubtask(taskFromContext.id, subtaskId)
+		}
+	}
+
+	return (
+		<SafeAreaView style={styles.safe}>
+			<ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+				<View style={styles.panel}>
+					<View style={styles.headerRow}>
+						<TouchableOpacity onPress={() => navigation.navigate('list')}>
+							<Text style={styles.backSymbol}>{'<'}</Text>
+						</TouchableOpacity>
+						<Text style={styles.headerTitle}>Editar tarefa</Text>
+					</View>
+
+					<TouchableOpacity style={styles.completeButton} onPress={handleToggleComplete}>
+						<Text style={styles.completeButtonText}>
+							{completed ? 'Reabrir tarefa' : 'Concluir tarefa'}
+						</Text>
+					</TouchableOpacity>
+
+					<View style={styles.section}>
+						<Text style={styles.sectionTitle}>{task.title}</Text>
+						<View style={styles.metaBlock}>
+							<Text style={styles.metaText}>Data: {formatDate(task.date)}</Text>
+							<Text style={styles.metaText}>Hora: {formatTime(task.time)}</Text>
+							{task.listName ? <Text style={styles.metaText}>Lista: {task.listName}</Text> : null}
+							{task.priority ? <Text style={styles.metaText}>Prioridade: {task.priority}</Text> : null}
+						</View>
+					</View>
+
+					<View style={styles.section}>
+						<Text style={styles.fieldLabel}>Descricao</Text>
+						<TextInput
+							value={description}
+							onChangeText={setDescription}
+							style={styles.textArea}
+							placeholder="Digite..."
+							placeholderTextColor="#ffdede"
+							multiline
+						/>
+					</View>
+
+					<View style={styles.section}>
+						<Text style={styles.fieldLabel}>Meta</Text>
+						<TextInput
+							value={goal}
+							onChangeText={setGoal}
+							style={styles.textArea}
+							placeholder="Digite..."
+							placeholderTextColor="#ffdede"
+							multiline
+						/>
+					</View>
+
+					<TouchableOpacity style={styles.saveButton} onPress={handleSaveInfo}>
+						<Text style={styles.saveButtonText}>Salvar informacoes</Text>
+					</TouchableOpacity>
+
+					<View style={styles.section}>
+						<Text style={styles.subtaskHeading}>Subtarefas</Text>
+						{subtasks.length === 0 && <Text style={styles.metaText}>Nenhuma subtarefa cadastrada.</Text>}
+						{subtasks.map((subtask) => (
+							<TouchableOpacity
+								key={subtask.id}
+								style={styles.subtaskRow}
+								onPress={() => handleSubtaskToggle(subtask.id)}
+								activeOpacity={taskFromContext ? 0.8 : 1}
+							>
+								<View style={[styles.checkbox, subtask.completed && styles.checkboxChecked]}>
+									{subtask.completed ? <Text style={styles.checkboxSymbol}>✓</Text> : null}
+								</View>
+								<Text style={[styles.subtaskText, subtask.completed && styles.subtaskCompleted]}>{subtask.title}</Text>
+							</TouchableOpacity>
+						))}
+					</View>
+				</View>
+			</ScrollView>
+		</SafeAreaView>
+	)
+}
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: COLORS.bg,
-  },
-  content: {
-    paddingHorizontal: 18,
-    paddingTop: 14,
-    paddingBottom: 40,
-  },
-  backBtn: {
-    padding: 6,
-    alignSelf: "flex-start",
-    marginBottom: 6,
-  },
-  backArrow: {
-    fontSize: 22,
-    color: COLORS.dark,
-  },
-  header: {
-    fontSize: 26,
-    color: COLORS.text,
-    fontWeight: "700",
-    marginBottom: 14,
-    textShadowColor: "rgba(0,0,0,0.08)",
-    textShadowOffset: { width: 0, height: 2 },
-    textShadowRadius: 2,
-  },
-  finishBtn: {
-    alignSelf: "center",
-    width: "78%",
-    backgroundColor: COLORS.soft,
-    paddingVertical: 14,
-    borderRadius: 12,
-    alignItems: "center",
-    marginBottom: 18,
-    ...Platform.select({
-      ios: {
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 6 },
-        shadowOpacity: 0.12,
-        shadowRadius: 6,
-      },
-      android: {
-        elevation: 6,
-      },
-    }),
-  },
-  finishText: {
-    color: COLORS.dark,
-    fontSize: 18,
-    fontWeight: "700",
-  },
-  card: {
-    backgroundColor: COLORS.card,
-    borderRadius: 10,
-    padding: 12,
-  },
-  title: {
-    color: COLORS.text,
-    fontSize: 20,
-    fontWeight: "700",
-    marginBottom: 10,
-  },
-  infoRow: {
-    flexDirection: "row",
-    marginBottom: 6,
-  },
-  infoLabel: {
-    width: 90,
-    color: COLORS.text,
-    fontWeight: "600",
-  },
-  infoValue: {
-    color: COLORS.text,
-    fontWeight: "400",
-  },
-  fieldLabel: {
-    color: COLORS.text,
-    marginTop: 12,
-    marginBottom: 6,
-    fontWeight: "700",
-  },
-  input: {
-    backgroundColor: COLORS.soft,
-    borderRadius: 12,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    color: COLORS.dark,
-  },
-  inputMultiline: {
-    height: 74,
-    textAlignVertical: "top",
-  },
-  subtasksTitle: {
-    color: COLORS.text,
-    marginTop: 16,
-    fontSize: 18,
-    fontWeight: "700",
-  },
-  subtasks: {
-    marginTop: 10,
-  },
-  subtaskRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 10,
-  },
-  checkbox: {
-    width: 28,
-    height: 28,
-    borderRadius: 20,
-    backgroundColor: "#fff",
-    marginRight: 10,
-    alignItems: "center",
-    justifyContent: "center",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.15,
-    shadowRadius: 3,
-    elevation: 3,
-  },
-  checkboxDone: {
-    backgroundColor: "#fff",
-  },
-  checkmark: {
-    color: COLORS.dark,
-    fontWeight: "700",
-  },
-  subtaskText: {
-    color: COLORS.text,
-    fontSize: 15,
-    flex: 1,
-  },
-  footerSpacer: {
-    height: 80,
-  },
-});
+	safe: {
+		flex: 1,
+		backgroundColor: '#e6eef0',
+	},
+	scrollContent: {
+		paddingVertical: 18,
+	},
+	panel: {
+		backgroundColor: '#f39b97',
+		marginHorizontal: '4%',
+		borderRadius: 12,
+		padding: 18,
+	},
+	headerRow: {
+		flexDirection: 'row',
+		alignItems: 'center',
+		marginBottom: 10,
+	},
+	backSymbol: {
+		color: '#fff',
+		fontSize: 20,
+		marginRight: 12,
+	},
+	headerTitle: {
+		color: '#fff',
+		fontSize: 18,
+		fontWeight: '600',
+	},
+	completeButton: {
+		backgroundColor: '#f6cfcf',
+		paddingVertical: 12,
+		borderRadius: 12,
+		alignItems: 'center',
+		marginBottom: 16,
+	},
+	completeButtonText: {
+		color: '#6b3f3f',
+		fontSize: 16,
+		fontWeight: '600',
+	},
+	section: {
+		marginBottom: 18,
+	},
+	sectionTitle: {
+		color: '#fff',
+		fontSize: 22,
+		fontWeight: '700',
+		marginBottom: 10,
+	},
+	metaBlock: {
+		backgroundColor: '#f6cfcf',
+		borderRadius: 12,
+		padding: 12,
+	},
+	metaText: {
+		color: '#6b3f3f',
+		fontSize: 14,
+		marginBottom: 4,
+	},
+	fieldLabel: {
+		color: '#fff',
+		fontSize: 16,
+		fontWeight: '600',
+		marginBottom: 6,
+	},
+	textArea: {
+		backgroundColor: '#f6cfcf',
+		borderRadius: 12,
+		padding: 12,
+		color: '#6b3f3f',
+		fontSize: 14,
+		minHeight: 80,
+		textAlignVertical: 'top',
+	},
+	saveButton: {
+		backgroundColor: '#f6cfcf',
+		paddingVertical: 12,
+		borderRadius: 12,
+		alignItems: 'center',
+	},
+	saveButtonText: {
+		color: '#6b3f3f',
+		fontSize: 15,
+		fontWeight: '600',
+	},
+	subtaskHeading: {
+		color: '#fff',
+		fontSize: 18,
+		fontWeight: '600',
+		marginBottom: 12,
+	},
+	subtaskRow: {
+		flexDirection: 'row',
+		alignItems: 'center',
+		marginBottom: 10,
+	},
+	checkbox: {
+		width: 24,
+		height: 24,
+		borderRadius: 6,
+		borderWidth: 2,
+		borderColor: '#f6cfcf',
+		alignItems: 'center',
+		justifyContent: 'center',
+		marginRight: 12,
+		backgroundColor: 'transparent',
+	},
+	checkboxChecked: {
+		backgroundColor: '#f6cfcf',
+	},
+	checkboxSymbol: {
+		color: '#6b3f3f',
+		fontSize: 16,
+		fontWeight: '700',
+	},
+	subtaskText: {
+		color: '#fff',
+		fontSize: 15,
+		flex: 1,
+	},
+	subtaskCompleted: {
+		opacity: 0.6,
+		textDecorationLine: 'line-through',
+	},
+	emptyPanel: {
+		flex: 1,
+		alignItems: 'center',
+		justifyContent: 'center',
+	},
+	emptyText: {
+		color: '#6b3f3f',
+		fontSize: 16,
+		marginBottom: 12,
+	},
+	backButton: {
+		backgroundColor: '#f39b97',
+		paddingHorizontal: 18,
+		paddingVertical: 10,
+		borderRadius: 12,
+	},
+	backButtonText: {
+		color: '#fff',
+		fontWeight: '600',
+	},
+})
