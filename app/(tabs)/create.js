@@ -1,44 +1,28 @@
-import React, { useState } from 'react'
-import {
-	Alert,
-	SafeAreaView,
-	ScrollView,
-	StyleSheet,
-	Text,
-	TextInput,
-	TouchableOpacity,
-	View,
-} from 'react-native'
-import { useNavigation } from '@react-navigation/native'
-
-import { useTasks } from '../../contexts/TaskContext'
+import React, { useState } from 'react';
+import { Alert, SafeAreaView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+import { useTasks } from '../../contexts/TaskContext';
 
 export default function CreateTaskScreen() {
-	const navigation = useNavigation()
-	const { addTask } = useTasks()
+  const { addTask } = useTasks();
+  const [title, setTitle] = useState('');
+  const [subtaskInput, setSubtaskInput] = useState('');
+  const [subtasks, setSubtasks] = useState([]);
+  const [category, setCategory] = useState('');
+  const [goal, setGoal] = useState('');
+  const [priority, setPriority] = useState('');
+  const navigation = useNavigation();
 
-	const [title, setTitle] = useState('')
-	const [date, setDate] = useState('')
-	const [time, setTime] = useState('')
-	const [listName, setListName] = useState('')
-	const [priority, setPriority] = useState('')
-	const [description, setDescription] = useState('')
-	const [goal, setGoal] = useState('')
-	const [subtaskInput, setSubtaskInput] = useState('')
-	const [subtasks, setSubtasks] = useState([])
+  const handleAddSubtask = () => {
+    const trimmed = subtaskInput.trim();
+    if (!trimmed) return;
+    setSubtasks((current) => [...current, trimmed]);
+    setSubtaskInput('');
+  };
 
-	const handleAddSubtask = () => {
-		const trimmed = subtaskInput.trim()
-		if (!trimmed) {
-			return
-		}
-		setSubtasks((current) => [...current, trimmed])
-		setSubtaskInput('')
-	}
-
-	const handleRemoveSubtask = (index) => {
-		setSubtasks((current) => current.filter((_, itemIndex) => itemIndex !== index))
-	}
+  const handleRemoveSubtask = (index) => {
+    setSubtasks((current) => current.filter((_, i) => i !== index));
+  };
 
 	const handleSaveTask = () => {
 		const trimmedTitle = title.trim()
@@ -58,129 +42,106 @@ export default function CreateTaskScreen() {
 			subtasks,
 		})
 
-		navigation.navigate('edit', { taskId: createdTask.id, feedback: 'created' })
+		navigation.navigate('edit', { taskId: createdTask.id })
 	}
 
-	return (
-		<SafeAreaView style={styles.safe}>
-			<ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-				<View style={styles.panel}>
-					<Text style={styles.heading}>Criar nova tarefa</Text>
+  return (
+    <SafeAreaView style={styles.safe}>
+      <View style={styles.panel}>
+        <Text style={styles.heading}>Criar nova tarefa</Text>
 
-					<TextInput
-						value={title}
-						onChangeText={setTitle}
-						placeholder="Titulo"
-						placeholderTextColor="#ffdede"
-						style={styles.input}
-					/>
+        {/* Categoria */}
+        <Text style={styles.label}>Categoria</Text>
+        <View style={styles.categoryRow}>
+          {['Escola', 'Auto Cuidado', 'Lazer'].map((cat) => (
+            <TouchableOpacity
+              key={cat}
+              style={[styles.categoryChip, category === cat && styles.categoryChipSelected]}
+              onPress={() => setCategory(cat)}
+            >
+              <Text style={[styles.categoryChipText, category === cat && styles.categoryChipTextSelected]}>{cat}</Text>
+            </TouchableOpacity>
+          ))}
+        </View>
 
-					<View style={styles.inlineGroup}>
-						<TextInput
-							value={date}
-							onChangeText={setDate}
-							placeholder="Data (AAAA-MM-DD)"
-							placeholderTextColor="#ffdede"
-							style={[styles.input, styles.halfInput]}
-						/>
-						<TextInput
-							value={time}
-							onChangeText={setTime}
-							placeholder="Hora (HH:MM)"
-							placeholderTextColor="#ffdede"
-							style={[styles.input, styles.halfInput]}
-						/>
-					</View>
+        {/* Meta */}
+        <Text style={styles.label}>Meta</Text>
+        <TextInput
+          value={goal}
+          onChangeText={setGoal}
+          placeholder="Descreva a meta (opcional)"
+          placeholderTextColor="#ffdede"
+          style={[styles.input, styles.metaInput]}
+        />
 
-					<TextInput
-						value={listName}
-						onChangeText={setListName}
-						placeholder="Lista"
-						placeholderTextColor="#ffdede"
-						style={styles.input}
-					/>
+        {/* Prioridade */}
+        <Text style={styles.label}>Prioridade</Text>
+        <TextInput
+          value={priority}
+          onChangeText={setPriority}
+          placeholder="Ex: Alta, Média, Baixa"
+          placeholderTextColor="#ffdede"
+          style={[styles.input, styles.priorityInput]}
+        />
 
-					<TextInput
-						value={priority}
-						onChangeText={setPriority}
-						placeholder="Prioridade"
-						placeholderTextColor="#ffdede"
-						style={styles.input}
-					/>
+        {/* Título */}
+        <TextInput
+          value={title}
+          onChangeText={setTitle}
+          placeholder="Título"
+          placeholderTextColor="#ffdede"
+          style={styles.input}
+        />
 
-					<TextInput
-						value={description}
-						onChangeText={setDescription}
-						placeholder="Descricao"
-						placeholderTextColor="#ffdede"
-						style={[styles.input, styles.multiline]}
-						multiline
-					/>
-
-					<TextInput
-						value={goal}
-						onChangeText={setGoal}
-						placeholder="Meta"
-						placeholderTextColor="#ffdede"
-						style={[styles.input, styles.multiline]}
-						multiline
-					/>
-
-					<View style={styles.subtaskHeader}>
-						<Text style={styles.subtaskTitle}>Subtarefas</Text>
-						<View style={styles.subtaskRow}>
-							<TextInput
-								value={subtaskInput}
-								onChangeText={setSubtaskInput}
-								placeholder="Adicionar subtarefa"
-								placeholderTextColor="#ffdede"
-								style={[styles.input, styles.subtaskInput]}
-							/>
-							<TouchableOpacity style={styles.addButton} onPress={handleAddSubtask}>
-								<Text style={styles.addButtonText}>+</Text>
-							</TouchableOpacity>
-						</View>
-					</View>
-
-					{subtasks.length > 0 && (
-						<View style={styles.subtaskList}>
-							{subtasks.map((item, index) => (
-								<View key={`${item}-${index}`} style={styles.subtaskItem}>
-									<Text style={styles.subtaskText}>{item}</Text>
-									<TouchableOpacity onPress={() => handleRemoveSubtask(index)}>
-										<Text style={styles.removeText}>Remover</Text>
-									</TouchableOpacity>
-								</View>
-							))}
-						</View>
-					)}
-
-					<TouchableOpacity style={styles.saveButton} onPress={handleSaveTask}>
-						<Text style={styles.saveButtonText}>Salvar tarefa</Text>
-					</TouchableOpacity>
-				</View>
-			</ScrollView>
-		</SafeAreaView>
-	)
+        {/* Subtarefas */}
+        <View style={styles.subtaskHeader}>
+          <Text style={styles.subtaskTitle}>Subtarefas</Text>
+          <View style={styles.subtaskRow}>
+            <TextInput
+              value={subtaskInput}
+              onChangeText={setSubtaskInput}
+              placeholder="Adicionar subtarefa"
+              placeholderTextColor="#ffdede"
+              style={[styles.input, styles.subtaskInput]}
+            />
+            <TouchableOpacity style={styles.addButton} onPress={handleAddSubtask}>
+              <Text style={styles.addButtonText}>+</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+        {subtasks.length > 0 && (
+          <View style={styles.subtaskList}>
+            {subtasks.map((item, index) => (
+              <View key={`${item}-${index}`} style={styles.subtaskItem}>
+                <Text style={styles.subtaskText}>{item}</Text>
+                <TouchableOpacity onPress={() => handleRemoveSubtask(index)}>
+                  <Text style={styles.removeText}>Remover</Text>
+                </TouchableOpacity>
+              </View>
+            ))}
+          </View>
+        )}
+        <TouchableOpacity style={styles.saveButton} onPress={handleSaveTask}>
+          <Text style={styles.saveButtonText}>Salvar tarefa</Text>
+        </TouchableOpacity>
+      </View>
+    </SafeAreaView>
+  );
 }
 
 const styles = StyleSheet.create({
 	safe: {
 		flex: 1,
-		flex: 1,
-		backgroundColor: '#f39b97',
+		backgroundColor: '#e6eef0',
 	},
 	content: {
-		flexGrow: 1,
-		paddingVertical: 24,
-		paddingHorizontal: 22,
+		paddingVertical: 18,
 	},
 	panel: {
-		flex: 1,
 		backgroundColor: '#f39b97',
-		borderRadius: 0,
-		paddingVertical: 4,
-		width: '100%',
+		marginHorizontal: '4%',
+		borderRadius: 12,
+		padding: 18,
 	},
 	heading: {
 		fontSize: 24,

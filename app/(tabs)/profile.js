@@ -6,6 +6,7 @@ import {
   StyleSheet,
   ScrollView,
   Alert,
+  Image
 } from "react-native";
 import { useAuth } from "../../contexts/AuthContext";
 
@@ -24,14 +25,17 @@ export default function ProfileScreen() {
   };
 
   return (
-    <ScrollView style={styles.container}>
-      <View style={styles.content}>
+    <ScrollView style={styles.container} contentContainerStyle={styles.scrollContent}>
+      <View style={styles.profileCard}>
         <View style={styles.avatarContainer}>
-          <Text style={styles.avatar}>👤</Text>
+          <Image style={styles.pic} source={require('../../assets/public/padraoperfil.jpg')} />
         </View>
 
         <Text style={styles.name}>{user?.name}</Text>
         <Text style={styles.email}>{user?.email}</Text>
+        <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+          <Text style={styles.logoutText}>editar perfil</Text>
+        </TouchableOpacity>
 
         <View style={styles.infoCard}>
           <Text style={styles.infoLabel}>ID do Usuário</Text>
@@ -47,16 +51,8 @@ export default function ProfileScreen() {
           </Text>
         </View>
 
-        <View style={styles.statusCard}>
-          <Text style={styles.statusEmoji}>✅</Text>
-          <Text style={styles.statusText}>Conta Ativa</Text>
-          <Text style={styles.statusDescription}>
-            Suas credenciais estão salvas no AsyncStorage
-          </Text>
-        </View>
-
         <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-          <Text style={styles.logoutText}>🔒 Sair da Conta</Text>
+          <Text style={styles.logoutText}>🔒 sair da Conta</Text>
         </TouchableOpacity>
 
         <View style={styles.versionCard}>
@@ -84,7 +80,7 @@ const styles = StyleSheet.create({
     width: 100,
     height: 100,
     borderRadius: 50,
-    backgroundColor: "#007AFF",
+    backgroundColor: "#000203ff",
     justifyContent: "center",
     alignItems: "center",
     marginBottom: 20,
@@ -110,7 +106,7 @@ const styles = StyleSheet.create({
   },
   infoCard: {
     width: "100%",
-    backgroundColor: "#fff",
+    backgroundColor: "#FADCD9",
     borderRadius: 12,
     padding: 20,
     marginBottom: 15,
@@ -119,58 +115,39 @@ const styles = StyleSheet.create({
   },
   infoLabel: {
     fontSize: 12,
-    color: "#888",
+    color: "#ff0357ff",
     marginBottom: 5,
     textTransform: "uppercase",
     fontWeight: "600",
   },
   infoValue: {
     fontSize: 16,
-    color: "#333",
+    color: "#f5b9cdff",
     fontWeight: "500",
   },
-  statusCard: {
-    width: "100%",
-    backgroundColor: "#E8F5E9",
-    borderRadius: 12,
-    padding: 20,
-    marginBottom: 30,
-    alignItems: "center",
-    borderWidth: 1,
-    borderColor: "#81C784",
-  },
-  statusEmoji: {
-    fontSize: 40,
-    marginBottom: 10,
-  },
-  statusText: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: "#2E7D32",
-    marginBottom: 5,
-  },
-  statusDescription: {
-    fontSize: 12,
-    color: "#388E3C",
-    textAlign: "center",
-  },
+  
   logoutButton: {
-    width: "100%",
-    backgroundColor: "#FF3B30",
-    borderRadius: 12,
-    padding: 18,
-    alignItems: "center",
-    marginBottom: 20,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-    elevation: 5,
+  backgroundColor: "#F5AEA7",
+  borderRadius: 25,
+  paddingVertical: 12,
+  paddingHorizontal: 40,
+  alignItems: "center",
+  alignSelf: "center",
+  marginTop: 35,
+  shadowColor: "#000",
+  shadowOffset: { width: 0, height: 2 },
+  shadowOpacity: 0.15,
+  shadowRadius: 4,
+  elevation: 4,
   },
   logoutText: {
     color: "#fff",
-    fontSize: 16,
     fontWeight: "bold",
+    fontSize: 18,
+    letterSpacing: 1,
+    textShadowColor: "#0002",
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 2,
   },
   versionCard: {
     width: "100%",
@@ -181,5 +158,37 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: "#999",
     textAlign: "center",
+  },
+  pic: {
+    width: 100,
+    height: 100,
+    marginTop: 10,
+    marginLeft: 15,
+    borderRadius: 500,
+    borderColor: '#fff',
+    borderStyle: 'solid',
+    borderWidth: 2,
+    position: 'absolute',
+    bottom: -50,
+    zIndex: 1,
+  },
+  profileCard: {
+    backgroundColor: "#F48C8C",
+    borderRadius: 30,
+    padding: 30,
+    width: "90%",
+    alignItems: "center",
+    marginTop: 30,
+    marginBottom: 30,
+    shadowColor: "#ff0095ff",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    elevation: 5,
+  },
+  scrollContent: {
+    flexGrow: 1,
+    justifyContent: "center",
+    alignItems: "center",
   },
 });
