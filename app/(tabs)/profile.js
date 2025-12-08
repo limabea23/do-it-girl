@@ -9,9 +9,11 @@ import {
   Image
 } from "react-native";
 import { useAuth } from "../../contexts/AuthContext";
+import { useRouter } from "expo-router";
 
 export default function ProfileScreen() {
   const { user, signOut } = useAuth();
+  const router = useRouter();
 
   const handleLogout = () => {
     Alert.alert("Sair", "Tem certeza que deseja sair?", [
@@ -31,11 +33,13 @@ export default function ProfileScreen() {
           <Image style={styles.pic} source={require('../../assets/public/padraoperfil.jpg')} />
         </View>
 
-        <Text style={styles.name}>{user?.name}</Text>
+        <Text style={styles.name}>{user?.username}</Text>
         <Text style={styles.email}>{user?.email}</Text>
-        <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+        <TouchableOpacity style={styles.editButton} onPress={() => router.push('/editprofile')}>
           <Text style={styles.logoutText}>editar perfil</Text>
         </TouchableOpacity>
+
+        <Text style={styles.quote}>"Você não pode ser o que os outros querem que você seja. Você tem que ser você mesma, do seu jeito."</Text>
 
         <View style={styles.infoCard}>
           <Text style={styles.infoLabel}>ID do Usuário</Text>
@@ -68,7 +72,7 @@ export default function ProfileScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#f5f5f5",
+    backgroundColor: "#F48C8C",
   },
   content: {
     flex: 1,
@@ -77,32 +81,35 @@ const styles = StyleSheet.create({
     paddingTop: 60,
   },
   avatarContainer: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    backgroundColor: "#000203ff",
+    width: "100%",
+    height: 0,
+    alignItems: "flex-start",
     justifyContent: "center",
-    alignItems: "center",
     marginBottom: 20,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-    elevation: 5,
+    backgroundColor: "transparent",
+    position: "relative",
   },
   avatar: {
     fontSize: 50,
   },
   name: {
-    fontSize: 28,
-    fontWeight: "bold",
-    color: "#333",
-    marginBottom: 8,
+    fontSize: 26,
+    fontWeight: "800",
+    color: "#fff",
+    marginTop: 6,
+    marginBottom: 2,
+    textAlign: "left",
+    marginLeft: 140, 
+    textShadowColor: "rgba(0,0,0,0.18)",
+    textShadowOffset: { width: 0, height: 2 },
+    textShadowRadius: 4,
   },
   email: {
-    fontSize: 16,
-    color: "#666",
-    marginBottom: 30,
+    fontSize: 14,
+    color: "rgba(255,255,255,0.9)",
+    marginBottom: 12,
+    textAlign: "left",
+    marginLeft: 140, 
   },
   infoCard: {
     width: "100%",
@@ -125,7 +132,6 @@ const styles = StyleSheet.create({
     color: "#f5b9cdff",
     fontWeight: "500",
   },
-  
   logoutButton: {
   backgroundColor: "#F5AEA7",
   borderRadius: 25,
@@ -160,26 +166,30 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
   pic: {
-    width: 100,
-    height: 100,
-    marginTop: 10,
-    marginLeft: 15,
-    borderRadius: 500,
-    borderColor: '#fff',
-    borderStyle: 'solid',
-    borderWidth: 2,
-    position: 'absolute',
-    bottom: -50,
-    zIndex: 1,
+    width: 110,
+    height: 110,
+    borderRadius: 55,
+    borderColor: "#fff",
+    borderWidth: 3,
+    position: "absolute",
+    left: 20,
+    top: 0, 
+    zIndex: 10,
+    backgroundColor: "#eee",
+    overflow: "hidden",
   },
   profileCard: {
-    backgroundColor: "#F48C8C",
+    backgroundColor: "#ddb1b1ff",
     borderRadius: 30,
-    padding: 30,
-    width: "90%",
-    alignItems: "center",
-    marginTop: 30,
+    paddingTop: 36, 
+    paddingBottom: 30,
+    paddingHorizontal: 20,
+    width: "92%",
+    alignItems: "flex-start",
+    alignSelf: "center",
+    marginTop: 40,
     marginBottom: 30,
+    overflow: "visible",
     shadowColor: "#ff0095ff",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.15,
@@ -190,5 +200,30 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     justifyContent: "center",
     alignItems: "center",
+  },
+  editButton: {
+    backgroundColor: "rgba(255,255,255,0.18)", 
+    borderRadius: 24,
+    paddingVertical: 10,
+    paddingHorizontal: 22,
+    alignItems: "center",
+    alignSelf: "flex-start",
+    marginTop: 6,
+    marginLeft: 140,
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.25)",
+    shadowColor: "rgba(0,0,0,0.12)",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.12,
+    shadowRadius: 6,
+    elevation: 3,
+  },
+  quote: {
+    fontSize: 14,
+    color: "rgba(255,255,255,0.95)",
+    marginTop: 14,
+    marginBottom: 14,
+    lineHeight: 20,
+    alignSelf: "flex-start",
   },
 });
