@@ -35,9 +35,6 @@ export default function ProfileScreen() {
 
         <Text style={styles.name}>{user?.username}</Text>
         <Text style={styles.email}>{user?.email}</Text>
-        <TouchableOpacity style={styles.editButton} onPress={() => router.push('/editprofile')}>
-          <Text style={styles.logoutText}>editar perfil</Text>
-        </TouchableOpacity>
 
         <Text style={styles.quote}>"Você não pode ser o que os outros querem que você seja. Você tem que ser você mesma, do seu jeito."</Text>
 
