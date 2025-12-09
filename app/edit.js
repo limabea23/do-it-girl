@@ -10,7 +10,7 @@ import {
 } from 'react-native'
 import { useNavigation, useRoute } from '@react-navigation/native'
 
-import { useTasks } from '../../contexts/TaskContext'
+import { useTasks } from '../contexts/TaskContext'
 
 const formatDate = (value) => {
 	if (!value) {
