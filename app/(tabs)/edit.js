@@ -240,87 +240,96 @@ export default function EditTaskScreen() {
 }
 
 const styles = StyleSheet.create({
-	safe: {
-		flex: 1,
-		backgroundColor: '#f39b97',
-	},
-	scrollContent: {
-		flexGrow: 1,
-		paddingVertical: 26,
-		paddingHorizontal: 22,
-	},
-	panel: {
-		flex: 1,
-		backgroundColor: '#f39b97',
-		borderRadius: 0,
-		paddingVertical: 6,
-		width: '100%',
-	},
-	topTitle: {
-		color: '#fff',
-		fontSize: 26,
-		fontWeight: '700',
-		textAlign: 'center',
-		marginBottom: 12,
-	},
-	headerRow: {
-		flexDirection: 'row',
-		alignItems: 'center',
-		marginBottom: 10,
-	},
-	backSymbol: {
-		color: '#fff',
-		fontSize: 20,
-		marginRight: 12,
-	},
-	headerTitle: {
-		color: '#fff',
-		fontSize: 18,
-		fontWeight: '600',
-	},
-	completeButton: {
+    safe: {
+        flex: 1,
+        backgroundColor: '#f39b97',
+    },
+    scrollContent: {
+        flexGrow: 1,
+        paddingVertical: 26,
+        paddingHorizontal: 22,
+    },
+    panel: {
+        flex: 1,
+        backgroundColor: '#f39b97',
+        borderRadius: 0,
+        paddingVertical: 6,
+        width: '100%',
+    },
+    topTitle: {
+        color: '#fff',
+        fontSize: 26,
+        fontWeight: '700',
+        textAlign: 'center',
+        marginBottom: 12,
+    },
+    headerRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: 10,
+    },
+    backSymbol: {
+        color: '#fff',
+        fontSize: 20,
+        marginRight: 12,
+    },
+    headerTitle: {
+        color: '#fff',
+        fontSize: 18,
+        fontWeight: '600',
+    },
+    completeButton: {
         backgroundColor: '#f6cfcf',
         paddingVertical: 12,
         borderRadius: 12,
         alignItems: 'center',
+        marginBottom: 16,
+        borderWidth: 1.4,
+        borderColor: '#d97a7a',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 3 }, // Aumenta a altura da sombra
+        shadowOpacity: 0.3, // Torna a sombra mais visível
+        shadowRadius: 5, // Aumenta o raio da sombra
+        elevation: 4, // Sombra mais forte para Android
+    },
+    completeButtonText: {
+        color: '#6b3f3f',
+        fontSize: 16,
+        fontWeight: '600',
+    },
+    section: {
+        marginBottom: 18,
+    },
+    sectionTitle: {
+        color: '#fff',
+        fontSize: 22,
+        fontWeight: '700',
         marginBottom: 10,
-        borderWidth: 1.4, 
-        borderColor: '#d97a7a', 
-	},
-	completeButtonText: {
-		color: '#6b3f3f',
-		fontSize: 16,
-		fontWeight: '600',
-	},
-	section: {
-		marginBottom: 18,
-	},
-	sectionTitle: {
-		color: '#fff',
-		fontSize: 22,
-		fontWeight: '700',
-		marginBottom: 10,
-
-	},
-	metaBlock: {
+    },
+    metaBlock: {
         backgroundColor: '#f6cfcf',
         borderRadius: 12,
         padding: 12,
-        borderWidth: 1.4, 
-        borderColor: '#d97a7a', 
-	},
-	metaText: {
-		color: '#6b3f3f',
-		fontSize: 14,
-		marginBottom: 4,
-	},
-	fieldLabel: {
-		color: '#fff',
-		fontSize: 16,
-		fontWeight: '600',
-		marginBottom: 6,
-	},
-	textArea: {
+        borderWidth: 1.4,
+        borderColor: '#d97a7a',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 3 }, // Aumenta a altura da sombra
+        shadowOpacity: 0.3, // Torna a sombra mais visível
+        shadowRadius: 5, // Aumenta o raio da sombra
+        elevation: 4, // Sombra mais forte para Android
+    },
+    metaText: {
+        color: '#6b3f3f',
+        fontSize: 14,
+        marginBottom: 4,
+    },
+    fieldLabel: {
+        color: '#fff',
+        fontSize: 16,
+        fontWeight: '600',
+        marginBottom: 6,
+    },
+    textArea: {
         backgroundColor: '#f6cfcf',
         borderRadius: 12,
         padding: 12,
@@ -328,92 +337,102 @@ const styles = StyleSheet.create({
         fontSize: 14,
         minHeight: 80,
         textAlignVertical: 'top',
-        borderWidth: 1.4, 
-        borderColor: '#d97a7a', 
-	},
-	saveButton: {
+        borderWidth: 1.4,
+        borderColor: '#d97a7a',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 3 }, // Aumenta a altura da sombra
+        shadowOpacity: 0.3, // Torna a sombra mais visível
+        shadowRadius: 5, // Aumenta o raio da sombra
+        elevation: 4, // Sombra mais forte para Android
+    },
+    saveButton: {
         backgroundColor: '#f6cfcf',
         paddingVertical: 12,
         borderRadius: 12,
         alignItems: 'center',
-        borderWidth: 1.4, 
-        borderColor: '#d97a7a',                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      
-	},
-	saveButtonText: {
-		color: '#6b3f3f',
-		fontSize: 15,
-		fontWeight: '600',
-	},
-	subtaskHeading: {
-		color: '#fff',
-		fontSize: 18,
-		fontWeight: '600',
-		marginBottom: 12,
-	},
-	subtaskRow: {
-		flexDirection: 'row',
-		alignItems: 'center',
-		marginBottom: 10,
-	},
-	checkbox: {
-		width: 24,
-		height: 24,
-		borderRadius: 6,
-		borderWidth: 2,
-		borderColor: '#f6cfcf',
-		alignItems: 'center',
-		justifyContent: 'center',
-		marginRight: 12,
-		backgroundColor: 'transparent',
-	},
-	checkboxChecked: {
-		backgroundColor: '#f6cfcf',
-	},
-	checkboxSymbol: {
-		color: '#6b3f3f',
-		fontSize: 16,
-		fontWeight: '700',
-	},
-	subtaskText: {
-		color: '#fff',
-		fontSize: 15,
-		flex: 1,
-	},
-	subtaskCompleted: {
-		opacity: 0.6,
-		textDecorationLine: 'line-through',
-	},
-	emptyPanel: {
-		flex: 1,
-		alignItems: 'center',
-		justifyContent: 'center',
-	},
-	emptyText: {
-		color: '#6b3f3f',
-		fontSize: 16,
-		marginBottom: 12,
-	},
-	backButton: {
-		backgroundColor: '#f39b97',
-		paddingHorizontal: 18,
-		paddingVertical: 10,
-		borderRadius: 12,
-	},
-	backButtonText: {
-		color: '#fff',
-		fontWeight: '600',
-	},
-	feedbackBanner: {
-		backgroundColor: '#f6cfcf',
-		borderRadius: 12,
-		paddingVertical: 10,
-		paddingHorizontal: 12,
-		marginBottom: 14,
-	},
-	feedbackText: {
-		color: '#6b3f3f',
-		fontSize: 14,
-		fontWeight: '600',
-		textAlign: 'center',
-	},
-})
+        borderWidth: 1.4,
+        borderColor: '#d97a7a',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 3 }, // Aumenta a altura da sombra
+        shadowOpacity: 0.3, // Torna a sombra mais visível
+        shadowRadius: 5, // Aumenta o raio da sombra
+        elevation: 4, // Sombra mais forte para Android
+    },
+    saveButtonText: {
+        color: '#6b3f3f',
+        fontSize: 15,
+        fontWeight: '600',
+    },
+    subtaskHeading: {
+        color: '#fff',
+        fontSize: 18,
+        fontWeight: '600',
+        marginBottom: 12,
+    },
+    subtaskRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: 10,
+    },
+    checkbox: {
+        width: 24,
+        height: 24,
+        borderRadius: 6,
+        borderWidth: 2,
+        borderColor: '#f6cfcf',
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginRight: 12,
+        backgroundColor: 'transparent',
+    },
+    checkboxChecked: {
+        backgroundColor: '#f6cfcf',
+    },
+    checkboxSymbol: {
+        color: '#6b3f3f',
+        fontSize: 16,
+        fontWeight: '700',
+    },
+    subtaskText: {
+        color: '#fff',
+        fontSize: 15,
+        flex: 1,
+    },
+    subtaskCompleted: {
+        opacity: 0.6,
+        textDecorationLine: 'line-through',
+    },
+    emptyPanel: {
+        flex: 1,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    emptyText: {
+        color: '#6b3f3f',
+        fontSize: 16,
+        marginBottom: 12,
+    },
+    backButton: {
+        backgroundColor: '#f39b97',
+        paddingHorizontal: 18,
+        paddingVertical: 10,
+        borderRadius: 12,
+    },
+    backButtonText: {
+        color: '#fff',
+        fontWeight: '600',
+    },
+    feedbackBanner: {
+        backgroundColor: '#f6cfcf',
+        borderRadius: 12,
+        paddingVertical: 10,
+        paddingHorizontal: 12,
+        marginBottom: 14,
+    },
+    feedbackText: {
+        color: '#6b3f3f',
+        fontSize: 14,
+        fontWeight: '600',
+        textAlign: 'center',
+    },
+});
