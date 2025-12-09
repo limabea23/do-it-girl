@@ -11,27 +11,71 @@ import { useRouter, useSegments } from "expo-router";
 const AuthContext = createContext({});
 
 export const AuthProvider = ({ children }) => {
+    const defaultUsers = [
+      {
+        id: "1",
+        username: "Leme",
+        email: "leme@gmail.com",
+        password: "leme123",
+        createdAt: new Date().toISOString(),
+      },
+      {
+        id: "2",
+        username: "Maria",
+        email: "maria@gmail.com",
+        password: "maria123",
+        createdAt: new Date().toISOString(),
+      },
+      {
+        id: "3",
+        username: "Valentim",
+        email: "valentim@gmail.com",
+        password: "valentim123",
+        createdAt: new Date().toISOString(),
+      },
+      {
+        id: "4",
+        username: "Bealima",
+        email: "bealima@gmail.com",
+        password: "bealima123",
+        createdAt: new Date().toISOString(),
+      },
+      {
+        id: "5",
+        username: "Luana",
+        email: "luana@gmail.com",
+        password: "luana123",
+        createdAt: new Date().toISOString(),
+      },
+    ];
+
+    const seedDefaultUsers = async () => {
+      const { getAllUsers, saveNewUser } = await import("../utils/storage");
+      const users = await getAllUsers();
+      for (const user of defaultUsers) {
+        const exists = users.some(u => u.username === user.username);
+        if (!exists) {
+          await saveNewUser(user);
+        }
+      }
+    };
   const [user, setUser] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
   const segments = useSegments();
 
-  // Carregar usuário do AsyncStorage ao iniciar
   useEffect(() => {
-    loadUser();
+    seedDefaultUsers().then(loadUser);
   }, []);
 
-  // Proteger rotas baseado em autenticação
   useEffect(() => {
     if (isLoading) return;
 
     const inAuthGroup = segments[0] === "(auth)";
 
     if (!user && !inAuthGroup) {
-      // Redirecionar para Signin se não estiver autenticado
       router.replace("/signin");
     } else if (user && inAuthGroup) {
-      // Redirecionar para home se já estiver autenticado
       router.replace("/home");
     }
   }, [user, segments, isLoading]);
@@ -70,14 +114,13 @@ export const AuthProvider = ({ children }) => {
         id: Date.now().toString(),
         username,
         email,
-        password, // Em produção, use hash!
+        password,
         createdAt: new Date().toISOString(),
       };
 
       const result = await saveNewUser(newUser);
 
       if (result.success) {
-        // Fazer login automático após cadastro
         const { password: _, ...userWithoutPassword } = newUser;
         setUser(userWithoutPassword);
         await saveUser(userWithoutPassword);

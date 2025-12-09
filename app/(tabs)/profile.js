@@ -52,7 +52,7 @@ export default function ProfileScreen() {
           </Text>
         </View>
 
-        <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+        <TouchableOpacity style={styles.logoutButton} onPress={async () => { await signOut(); router.replace('/(auth)/signin'); }}>
           <Text style={styles.logoutText}>🔒 sair da Conta</Text>
         </TouchableOpacity>
 
