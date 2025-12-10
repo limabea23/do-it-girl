@@ -3,7 +3,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage'
 
 const TaskContext = createContext(null)
 
-const seedTasks = [
+const seedTasksLuana = [
   {
     id: 'seed-1',
     title: 'Estudar Geografia',
@@ -36,18 +36,31 @@ const seedTasks = [
     completed: false,
     createdAt: '2025-11-15T12:30:00.000Z',
   },
-]
+];
 
 export function TaskProvider({ children }) {
-  const [tasks, setTasks] = useState(seedTasks)
+  const [tasks, setTasks] = useState([])
 
+  const [userId, setUserId] = useState(null);
   useEffect(() => {
     (async () => {
       try {
-        const data = await AsyncStorage.getItem('tasks');
-        if (data) {
-          const parsed = JSON.parse(data);
-          if (Array.isArray(parsed)) setTasks(parsed);
+        const { getUser } = await import('../utils/storage');
+        const user = await getUser();
+        if (user && user.id) {
+          setUserId(user.id);
+          const data = await AsyncStorage.getItem(`tasks_${user.id}`);
+          if (data) {
+            const parsed = JSON.parse(data);
+            if (Array.isArray(parsed)) setTasks(parsed);
+            else setTasks([]);
+          } else {
+            if (user.id === '5') setTasks(seedTasksLuana);
+            else setTasks([]);
+          }
+        } else {
+          setUserId(null);
+          setTasks([]);
         }
       } catch (e) {
         console.warn('Erro ao carregar tarefas:', e);
@@ -55,16 +68,16 @@ export function TaskProvider({ children }) {
     })();
   }, []);
 
-  // Salvar tarefas sempre que mudarem
   useEffect(() => {
     (async () => {
+      if (!userId) return;
       try {
-        await AsyncStorage.setItem('tasks', JSON.stringify(tasks));
+        await AsyncStorage.setItem(`tasks_${userId}`, JSON.stringify(tasks));
       } catch (e) {
         console.warn('Erro ao salvar tarefas:', e);
       }
     })();
-  }, [tasks]);
+  }, [tasks, userId]);
 
   const addTask = useCallback((taskData) => {
     const timestamp = Date.now().toString()
@@ -120,9 +133,13 @@ export function TaskProvider({ children }) {
     )
   }, [])
 
+  const deleteTask = useCallback((taskId) => {
+    setTasks((current) => current.filter((task) => task.id !== taskId));
+  }, []);
+
   const value = useMemo(
-    () => ({ tasks, addTask, updateTask, toggleSubtask }),
-    [tasks, addTask, updateTask, toggleSubtask],
+    () => ({ tasks, addTask, updateTask, toggleSubtask, deleteTask }),
+    [tasks, addTask, updateTask, toggleSubtask, deleteTask],
   )
 
   return <TaskContext.Provider value={value}>{children}</TaskContext.Provider>
