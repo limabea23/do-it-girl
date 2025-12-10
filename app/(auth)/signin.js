@@ -75,7 +75,7 @@ export default function LoginScreen() {
         keyboardShouldPersistTaps="handled"
       >
         <View style={styles.content}>
-          <Image source={require("../../assets/images/Logo.png")} style={styles.image} />
+          <Image source={require("../../assets/public/Logo.png")} style={styles.image} />
           <Text style={styles.title}>Bem-vindo ao Do It, Girl!</Text>
           <Text style={styles.subtitle}>Acesse sua conta para continuar       </Text>
         <Text style={styles.username}>username:</Text>
@@ -160,6 +160,8 @@ const styles = StyleSheet.create({
     width: 250,
     height: 250,
     alignSelf: "center",
+    marginTop: -170,
+    marginBottom: 0,
   },
   title: {
     fontSize: 28,

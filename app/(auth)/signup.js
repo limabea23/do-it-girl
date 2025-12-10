@@ -88,7 +88,7 @@ export default function RegisterScreen() {
         keyboardShouldPersistTaps="handled"
       >
         <View style={styles.content}>
-          <Image source={require("../../assets/images/Logo.png")} style={styles.image} />
+          <Image source={require("../../assets/public/Logo.png")} style={styles.image} />
           <Text style={styles.title}>Crie sua conta</Text>
           <Text style={styles.subtitle}>Entre para o Do It, Girl!</Text>
 
