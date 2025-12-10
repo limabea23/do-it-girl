@@ -1,159 +1,201 @@
-import React, { useState } from 'react';
-import { Alert, SafeAreaView, StyleSheet, Text, TextInput, TouchableOpacity, View, ScrollView, Platform } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
-import { useTasks } from '../../contexts/TaskContext';
-import DateTimePicker from '@react-native-community/datetimepicker';
+import React, { useState } from "react";
+import {
+  Alert,
+  SafeAreaView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+  ScrollView,
+  Platform,
+  Dimensions,
+} from "react-native";
+import { MaterialIcons, MaterialCommunityIcons } from "@expo/vector-icons";
+import { useNavigation } from "@react-navigation/native";
+import { useTasks } from "../../contexts/TaskContext";
+
+const { width } = Dimensions.get("window");
+
+const wp = (v) => (width * v) / 100;
+const size = (s) => {
+  if (width < 360) return s * 0.82;
+  if (width < 400) return s * 0.9;
+  if (width > 500) return s * 1.12;
+  return s;
+};
 
 export default function CreateTaskScreen() {
   const { addTask } = useTasks();
-  const [title, setTitle] = useState('');
-  const [subtaskInput, setSubtaskInput] = useState('');
-  const [subtasks, setSubtasks] = useState([]);
-  const [category, setCategory] = useState('');
-  const [goal, setGoal] = useState('');
-  const [priority, setPriority] = useState('');
-  const [date, setDate] = useState('');
-  const [showDatePicker, setShowDatePicker] = useState(false);
-  const [time, setTime] = useState('');
-  const [meeting, setMeeting] = useState('');
   const navigation = useNavigation();
+
+  const [title, setTitle] = useState("");
+  const [subtaskInput, setSubtaskInput] = useState("");
+  const [subtasks, setSubtasks] = useState([]);
+
+  const [category, setCategory] = useState("");
+  const [goal, setGoal] = useState("");
+  const [priority, setPriority] = useState("");
+
+  const [date, setDate] = useState("");
+  const [time, setTime] = useState("");
+  const [meeting, setMeeting] = useState("");
 
   const handleAddSubtask = () => {
     const trimmed = subtaskInput.trim();
     if (!trimmed) return;
-    setSubtasks((current) => [...current, trimmed]);
-    setSubtaskInput('');
+    setSubtasks((c) => [...c, trimmed]);
+    setSubtaskInput("");
   };
 
-  const handleRemoveSubtask = (index) => {
-    setSubtasks((current) => current.filter((_, i) => i !== index));
+  const handleRemoveSubtask = (i) => {
+    setSubtasks((c) => c.filter((_, index) => index !== i));
   };
 
   const handleSaveTask = () => {
-    const trimmedTitle = title.trim();
-    if (!trimmedTitle) {
-      Alert.alert('Aviso', 'Informe um título para a tarefa.');
-      return;
-    }
-    if (!category) {
-      Alert.alert('Aviso', 'Selecione uma categoria.');
-      return;
-    }
+    if (!title.trim()) return Alert.alert("Aviso", "Informe um título.");
+    if (!category) return Alert.alert("Aviso", "Selecione uma categoria.");
+
     addTask({
-      title: trimmedTitle,
+      title: title.trim(),
       subtasks,
       listName: category,
       goal: goal.trim(),
       priority: priority.trim(),
-      date: date.trim(),
-      time: time.trim(),
+      date,
+      time,
       meeting: meeting.trim(),
     });
-    navigation.goBack();
+
+    navigation.navigate('list');
   };
 
   return (
     <SafeAreaView style={styles.safe}>
-      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={true}>
+      <ScrollView
+        contentContainerStyle={styles.scroll}
+        showsVerticalScrollIndicator={false}
+      >
         <View style={styles.panel}>
           <Text style={styles.heading}>Minhas Listas e Tarefas</Text>
-          {/* Chips de categoria */}
+
           <View style={styles.chipRow}>
-            {['Todas', 'Estudos', 'AutoCuidado', 'Lazer'].map((cat) => (
+            {["Todas", "Estudos", "AutoCuidado", "Lazer"].map((cat) => (
               <TouchableOpacity
                 key={cat}
                 style={[styles.chip, category === cat && styles.chipSelected]}
                 onPress={() => setCategory(cat)}
               >
-                <Text style={[styles.chipText, category === cat && styles.chipTextSelected]}>{cat}</Text>
+                <Text
+                  style={[
+                    styles.chipText,
+                    category === cat && styles.chipTextSelected,
+                  ]}
+                >
+                  {cat}
+                </Text>
               </TouchableOpacity>
             ))}
           </View>
-          {/* Campo de data com calendário */}
-          <View style={styles.iconInputRow}>
-            <View style={styles.iconInputBlock}>
-              <TouchableOpacity onPress={() => setShowDatePicker(true)} style={styles.datePickerButton}>
-                <Text style={styles.datePickerText}>{date ? date : 'Selecionar data'}</Text>
-              </TouchableOpacity>
-              {showDatePicker && (
-                <DateTimePicker
-                  value={date ? new Date(date.split('/').reverse().join('-')) : new Date()}
-                  mode="date"
-                  display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-                  onChange={(event, selectedDate) => {
-                    setShowDatePicker(false);
-                    if (selectedDate) {
-                      const d = selectedDate;
-                      const formatted = `${d.getDate().toString().padStart(2, '0')}/${(d.getMonth()+1).toString().padStart(2, '0')}/${d.getFullYear()}`;
-                      setDate(formatted);
-                    }
-                  }}
-                  style={{backgroundColor: '#fff'}}
-                />
-              )}
-            </View>
-            <View style={styles.iconInputBlock}>
+
+          <View style={styles.iconRow}>
+            <View style={styles.iconBlock}>
+              <MaterialIcons name="date-range" size={size(22)} color="#fff" />
               <TextInput
+                placeholder="Digite a data (ex: 12/10/2025)"
+                value={date}
+                onChangeText={setDate}
+                placeholderTextColor="#ffdede"
+                style={styles.iconInput}
+              />
+            </View>
+
+            <View style={styles.iconBlock}>
+              <MaterialIcons name="access-time" size={size(22)} color="#fff" />
+              <TextInput
+                placeholder="Digite a hora (ex: 14:30)"
                 value={time}
                 onChangeText={setTime}
-                placeholder="Hora"
                 placeholderTextColor="#ffdede"
                 style={styles.iconInput}
               />
             </View>
-            <View style={styles.iconInputBlock}>
+
+            <View style={styles.iconBlock}>
+              <MaterialCommunityIcons
+                name="account-group-outline"
+                size={size(22)}
+                color="#fff"
+              />
               <TextInput
+                placeholder="Reunião"
                 value={meeting}
                 onChangeText={setMeeting}
-                placeholder="Reunião"
                 placeholderTextColor="#ffdede"
                 style={styles.iconInput}
               />
             </View>
           </View>
-          {/* Chips de meta/prioridade */}
+
           <View style={styles.chipRow}>
             <TouchableOpacity
-              style={[styles.chip, goal === 'Mais Importante' && styles.chipSelected]}
-              onPress={() => setGoal('Mais Importante')}
+              style={[styles.chip, goal === "Mais Importante" && styles.chipSelected]}
+              onPress={() => setGoal("Mais Importante")}
             >
-              <Text style={[styles.chipText, goal === 'Mais Importante' && styles.chipTextSelected]}>Meta Importante</Text>
+              <Text
+                style={[
+                  styles.chipText,
+                  goal === "Mais Importante" && styles.chipTextSelected,
+                ]}
+              >
+                Meta Importante
+              </Text>
             </TouchableOpacity>
+
             <TouchableOpacity
-              style={[styles.chip, priority === 'Prioridade' && styles.chipSelected]}
-              onPress={() => setPriority('Prioridade')}
+              style={[styles.chip, priority === "Prioridade" && styles.chipSelected]}
+              onPress={() => setPriority("Prioridade")}
             >
-              <Text style={[styles.chipText, priority === 'Prioridade' && styles.chipTextSelected]}>Prioridade</Text>
+              <Text
+                style={[
+                  styles.chipText,
+                  priority === "Prioridade" && styles.chipTextSelected,
+                ]}
+              >
+                Prioridade
+              </Text>
             </TouchableOpacity>
           </View>
-          {/* Título */}
+
           <TextInput
             value={title}
             onChangeText={setTitle}
-            placeholder="Título"
-            placeholderTextColor="#ffdede"
+            placeholder="Título da tarefa"
+            placeholderTextColor="#a13d3a99"
             style={styles.input}
           />
-          {/* Subtarefas */}
+
           <View style={styles.subtaskHeader}>
             <Text style={styles.subtaskTitle}>Subtarefas</Text>
+
             <View style={styles.subtaskArea}>
               <View style={styles.subtaskRow}>
                 <TextInput
                   value={subtaskInput}
                   onChangeText={setSubtaskInput}
                   placeholder="Adicionar subtarefa"
-                  placeholderTextColor="#ffdede"
+                  placeholderTextColor="#a13d3a99"
                   style={[styles.input, styles.subtaskInput]}
                 />
-                <TouchableOpacity style={styles.addButtonCircle} onPress={handleAddSubtask}>
-                  <Text style={styles.addButtonText}>+</Text>
+                <TouchableOpacity style={styles.addCircle} onPress={handleAddSubtask}>
+                  <Text style={styles.addCircleText}>+</Text>
                 </TouchableOpacity>
               </View>
+
               {subtasks.length > 0 && (
                 <View style={styles.subtaskList}>
                   {subtasks.map((item, index) => (
-                    <View key={`${item}-${index}`} style={styles.subtaskItem}>
+                    <View key={index} style={styles.subtaskItem}>
                       <Text style={styles.subtaskText}>{item}</Text>
                       <TouchableOpacity onPress={() => handleRemoveSubtask(index)}>
                         <Text style={styles.removeText}>Remover</Text>
@@ -164,7 +206,8 @@ export default function CreateTaskScreen() {
               )}
             </View>
           </View>
-          <TouchableOpacity style={styles.saveButtonRounded} onPress={handleSaveTask} activeOpacity={0.85}>
+
+          <TouchableOpacity style={styles.saveButton} onPress={handleSaveTask}>
             <Text style={styles.saveButtonText}>Criar</Text>
           </TouchableOpacity>
         </View>
@@ -176,174 +219,173 @@ export default function CreateTaskScreen() {
 const styles = StyleSheet.create({
   safe: {
     flex: 1,
-    backgroundColor: '#e6eef0',
+    backgroundColor: "#fbeff2",
   },
-  scrollContent: {
-    paddingBottom: 40,
+  scroll: {
+    paddingBottom: size(60),
+    paddingTop: size(22),
   },
   panel: {
-    backgroundColor: '#f39b97',
-    marginHorizontal: '4%',
-    borderRadius: 12,
-    padding: 18,
-    marginTop: 40,
+    backgroundColor: "#fbb1b1",
+    borderRadius: size(22),
+    padding: size(22),
+    marginHorizontal: "5%",
+    shadowColor: "#e57373",
+    shadowOpacity: 0.13,
+    shadowRadius: 18,
+    elevation: 10,
+    borderWidth: 2,
+    borderColor: "#fadcd9",
   },
   heading: {
-    fontSize: 24,
-    color: '#fff',
-    textAlign: 'center',
-    marginBottom: 16,
-    fontWeight: '600',
-  },
-  input: {
-    backgroundColor: '#f6c0c0',
-    paddingVertical: 10,
-    paddingHorizontal: 14,
-    borderRadius: 12,
-    color: '#6b3f3f',
-    marginBottom: 10,
-    fontSize: 15,
+    fontSize: size(32),
+    textAlign: "center",
+    marginBottom: size(20),
+    color: "#e57373",
+    fontWeight: "700",
+    fontFamily: Platform.OS === "ios" ? "Montserrat" : "sans-serif",
+    letterSpacing: 1.5,
   },
   chipRow: {
-    flexDirection: 'row',
-    marginBottom: 10,
-    justifyContent: 'center',
-    gap: 8,
+    flexDirection: "row",
+    justifyContent: "center",
+    flexWrap: "wrap",
+    gap: size(10),
+    marginBottom: size(18),
   },
   chip: {
-    backgroundColor: '#f6cfcf',
-    borderRadius: 16,
-    paddingVertical: 8,
-    paddingHorizontal: 20,
-    marginRight: 8,
+    backgroundColor: "#fadcd9",
+    borderRadius: size(16),
+    paddingVertical: size(10),
+    paddingHorizontal: size(20),
     borderWidth: 2,
-    borderColor: '#f6cfcf',
+    borderColor: "#fbb1b1",
+    marginBottom: size(8),
+    marginRight: size(8),
+    shadowColor: "#fbb1b1",
+    shadowOpacity: 0.12,
+    shadowRadius: 4,
     elevation: 2,
   },
   chipSelected: {
-    backgroundColor: '#a13d3a',
-    borderColor: '#a13d3a',
-    elevation: 4,
+    backgroundColor: "#e57373",
+    borderColor: "#e57373",
   },
   chipText: {
-    color: '#a13d3a',
-    fontWeight: '600',
-    fontSize: 15,
+    color: "#e57373",
+    fontWeight: "700",
+    fontSize: size(15),
+    fontFamily: Platform.OS === "ios" ? "Montserrat" : "sans-serif",
   },
   chipTextSelected: {
-    color: '#fff',
+    color: "#fadcd9",
+    fontWeight: "700",
   },
-  iconInputRow: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    gap: 8,
-    marginBottom: 10,
+  iconRow: {
+    flexDirection: "row",
+    gap: size(10),
+    marginBottom: size(18),
   },
-  iconInputBlock: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#f6cfcf',
-    borderRadius: 12,
-    paddingHorizontal: 10,
-    marginRight: 8,
+  iconBlock: {
     flex: 1,
-  },
-  datePickerButton: {
-    backgroundColor: '#f6cfcf',
-    borderRadius: 12,
-    paddingVertical: 10,
-    paddingHorizontal: 14,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 0,
-  },
-  datePickerText: {
-    color: '#6b3f3f',
-    fontSize: 15,
+    backgroundColor: "#fadcd9",
+    borderRadius: size(16),
+    paddingHorizontal: size(10),
+    flexDirection: "row",
+    alignItems: "center",
+    borderWidth: 1,
+    borderColor: "#fbb1b1",
   },
   iconInput: {
     flex: 1,
-    backgroundColor: 'transparent',
-    color: '#6b3f3f',
-    fontSize: 15,
-    paddingVertical: 10,
-    borderRadius: 12,
+    paddingVertical: size(12),
+    fontSize: size(15),
+    color: "#e57373",
+    fontFamily: Platform.OS === "ios" ? "Montserrat" : "sans-serif",
+  },
+  input: {
+    backgroundColor: "#fadcd9",
+    paddingVertical: size(12),
+    paddingHorizontal: size(14),
+    borderRadius: size(14),
+    color: "#e57373",
+    fontSize: size(15),
+    borderWidth: 1.5,
+    borderColor: "#fbb1b1",
+    marginBottom: size(14),
+    fontFamily: Platform.OS === "ios" ? "Montserrat" : "sans-serif",
   },
   subtaskHeader: {
-    marginTop: 12,
+    marginTop: size(18),
   },
   subtaskTitle: {
-    color: '#fff',
-    fontSize: 18,
-    fontWeight: '600',
-    marginBottom: 8,
+    color: "#e57373",
+    fontSize: size(20),
+    fontWeight: "700",
+    fontFamily: Platform.OS === "ios" ? "Montserrat" : "sans-serif",
   },
   subtaskArea: {
-    backgroundColor: '#f6cfcf',
-    borderRadius: 12,
-    padding: 12,
-    marginTop: 8,
+    backgroundColor: "#fadcd9",
+    borderRadius: size(16),
+    padding: size(14),
+    borderWidth: 1,
+    borderColor: "#fbb1b1",
+    marginTop: size(8),
   },
   subtaskRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
   },
   subtaskInput: {
     flex: 1,
     marginBottom: 0,
-    marginRight: 8,
   },
-  addButtonCircle: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginLeft: 8,
-    elevation: 2,
+  addCircle: {
+    width: size(36),
+    height: size(36),
+    borderRadius: size(18),
+    backgroundColor: "#e57373",
+    alignItems: "center",
+    justifyContent: "center",
+    marginLeft: size(8),
+    borderWidth: 1,
+    borderColor: "#fadcd9",
   },
-  addButtonText: {
-    color: '#6b3f3f',
-    fontSize: 24,
-    fontWeight: '600',
+  addCircleText: {
+    color: "#fadcd9",
+    fontSize: size(24),
+    fontWeight: "700",
+    fontFamily: Platform.OS === "ios" ? "Montserrat" : "sans-serif",
   },
   subtaskList: {
-    marginTop: 12,
-    backgroundColor: '#f6cfcf',
-    borderRadius: 12,
-    padding: 12,
+    marginTop: size(12),
   },
   subtaskItem: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingVertical: 6,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    paddingVertical: size(6),
   },
   subtaskText: {
-    color: '#6b3f3f',
-    fontSize: 15,
-    flex: 1,
-    marginRight: 8,
+    color: "#e57373",
+    fontSize: size(15),
   },
   removeText: {
-    color: '#a13d3a',
-    fontWeight: '500',
+    color: "#e57373",
+    fontWeight: "700",
   },
-  saveButtonRounded: {
-    marginTop: 24,
-    backgroundColor: '#a13d3a',
-    paddingVertical: 14,
-    borderRadius: 24,
-    alignItems: 'center',
-    elevation: 3,
-    width: '80%',
-    alignSelf: 'center',
+  saveButton: {
+    backgroundColor: "#e57373",
+    marginTop: size(26),
+    paddingVertical: size(16),
+    borderRadius: size(28),
+    alignItems: "center",
+    width: "85%",
+    alignSelf: "center",
   },
   saveButtonText: {
-    color: '#fff',
-    fontSize: 18,
-    fontWeight: '700',
-    letterSpacing: 1,
+    color: "#fadcd9",
+    fontSize: size(20),
+    fontWeight: "800",
+    fontFamily: Platform.OS === "ios" ? "Montserrat" : "sans-serif",
   },
 });

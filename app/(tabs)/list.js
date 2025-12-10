@@ -9,6 +9,7 @@ import {
     TextInput,
 } from 'react-native'
 import { useNavigation } from '@react-navigation/native'
+import { MaterialIcons } from '@expo/vector-icons'
 
 import { useTasks } from '../../contexts/TaskContext'
 
@@ -57,7 +58,7 @@ const formatTime = (value) => {
 export default function List() {
     const [search, setSearch] = useState('')
     const navigation = useNavigation()
-    const { tasks } = useTasks()
+    const { tasks, deleteTask } = useTasks()
 
     const sortedTasks = useMemo(() => {
         return [...tasks].sort((a, b) => {
@@ -119,16 +120,16 @@ export default function List() {
                         }
 
                         return (
-                            <TouchableOpacity
-                                key={task.id}
-                                style={[styles.card, task.completed && styles.cardCompleted]}
-                                activeOpacity={0.85}
-                                onPress={() => handleTaskPress(task)}
-                            >
-                                <Text style={styles.cardTitle}>{task.title}</Text>
-                                <Text style={styles.cardSubtitle}>{subtitleParts.join(' • ')}</Text>
-                                {task.priority ? <Text style={styles.cardPriority}>Prioridade: {task.priority}</Text> : null}
-                            </TouchableOpacity>
+                            <View key={task.id} style={[styles.card, task.completed && styles.cardCompleted, {flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between'}]}>
+                                <TouchableOpacity style={{flex: 1}} activeOpacity={0.85} onPress={() => handleTaskPress(task)}>
+                                    <Text style={styles.cardTitle}>{task.title}</Text>
+                                    <Text style={styles.cardSubtitle}>{subtitleParts.join(' • ')}</Text>
+                                    {task.priority ? <Text style={styles.cardPriority}>Prioridade: {task.priority}</Text> : null}
+                                </TouchableOpacity>
+                                <TouchableOpacity style={styles.deleteButton} onPress={() => deleteTask(task.id)}>
+                                    <MaterialIcons name="delete" size={22} color="#e57373" />
+                                </TouchableOpacity>
+                            </View>
                         )
                     })}
 
@@ -230,5 +231,13 @@ const styles = StyleSheet.create({
     },
     bottomSpacing: {
         height: 24,
+    },
+    deleteButton: {
+        marginLeft: 10,
+        backgroundColor: '#fadcd9',
+        borderRadius: 20,
+        padding: 6,
+        alignItems: 'center',
+        justifyContent: 'center',
     },
 });
