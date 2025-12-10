@@ -15,6 +15,7 @@ import {
 import { useAuth } from "../../contexts/AuthContext";
 import { Link } from "expo-router";
 import { z } from "zod";
+import { Ionicons } from "@expo/vector-icons";
 
 const registerSchema = z.object({
   username: z.string().min(1, "O username é obrigatório"),
@@ -31,6 +32,8 @@ export default function RegisterScreen() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
   const { signUp } = useAuth();
@@ -115,26 +118,50 @@ export default function RegisterScreen() {
           />
 
           <Text style={styles.label}>senha:</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="insira sua senha (mínimo 6 caracteres)"
-            value={password}
-            onChangeText={setPassword}
-            secureTextEntry
-            autoCapitalize="none"
-            editable={!loading}
-          />
+          <View style={styles.passwordContainer}>
+            <TextInput
+              style={styles.passwordInput}
+              placeholder="insira sua senha"
+              value={password}
+              onChangeText={setPassword}
+              secureTextEntry={!showPassword}
+              autoCapitalize="none"
+              editable={!loading}
+            />
+            <TouchableOpacity
+              style={styles.eyeIcon}
+              onPress={() => setShowPassword(!showPassword)}
+            >
+              <Ionicons
+                name={showPassword ? "eye-off" : "eye"}
+                size={24}
+                color="#F79489"
+              />
+            </TouchableOpacity>
+          </View>
 
           <Text style={styles.label}>confirmar senha:</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="confirme sua senha"
-            value={confirmPassword}
-            onChangeText={setConfirmPassword}
-            secureTextEntry
-            autoCapitalize="none"
-            editable={!loading}
-          />
+          <View style={styles.passwordContainer}>
+            <TextInput
+              style={styles.passwordInput}
+              placeholder="confirme sua senha"
+              value={confirmPassword}
+              onChangeText={setConfirmPassword}
+              secureTextEntry={!showConfirmPassword}
+              autoCapitalize="none"
+              editable={!loading}
+            />
+            <TouchableOpacity
+              style={styles.eyeIcon}
+              onPress={() => setShowConfirmPassword(!showConfirmPassword)}
+            >
+              <Ionicons
+                name={showConfirmPassword ? "eye-off" : "eye"}
+                size={24}
+                color="#F79489"
+              />
+            </TouchableOpacity>
+          </View>
 
           <TouchableOpacity
             style={[styles.button, loading && styles.buttonDisabled]}
@@ -167,6 +194,24 @@ export default function RegisterScreen() {
 }
 
 const styles = StyleSheet.create({
+    passwordContainer: {
+      flexDirection: "row",
+      alignItems: "center",
+      backgroundColor: "#FADCD9",
+      borderRadius: 8,
+      marginBottom: 15,
+      borderWidth: 1,
+      borderColor: "#ddd",
+    },
+    passwordInput: {
+      flex: 1,
+      padding: 15,
+      fontSize: 16,
+      color: "#F79489",
+    },
+    eyeIcon: {
+      padding: 15,
+    },
   container: {
     flex: 1,
     backgroundColor: "#F79489",
