@@ -33,6 +33,11 @@ export default function LoginScreen() {
   const handleLogin = async () => {
     setErrors({});
 
+    if (!username.trim() || !password.trim()) {
+      window.alert("todos os campos são necessarios");
+      return;
+    }
+
     try {
       const validatedData = loginSchema.parse({
         username: username.trim(),
