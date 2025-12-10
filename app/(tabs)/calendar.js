@@ -30,7 +30,7 @@ export default function CalendarScreen() {
     const [tempTime, setTempTime] = useState(new Date());
     const [priority, setPriority] = useState("");
     const { tasks, addTask } = useTasks();
-    
+
     const dayTasks = selected ? tasks.filter(t => t.date === selected) : [];
 
     function handleAddTask() {
@@ -50,7 +50,7 @@ export default function CalendarScreen() {
     return (
         <View style={styles.container}>
             <Text style={styles.title}>Calendário</Text>
-            <ScrollView contentContainerStyle={{paddingBottom: 30}} showsVerticalScrollIndicator={false}>
+            <ScrollView contentContainerStyle={{ paddingBottom: 30 }} showsVerticalScrollIndicator={false}>
                 <Calendar
                     onDayPress={day => setSelected(day.dateString)}
                     markedDates={{
@@ -157,47 +157,47 @@ export default function CalendarScreen() {
     );
 }
 const styles = StyleSheet.create({
-            addBtnFull: {
-                backgroundColor: '#F79489',
-                borderRadius: 8,
-                paddingVertical: 7,
-                alignItems: 'center',
-                justifyContent: 'center',
-                marginTop: 6,
-                marginBottom: 6,
-                width: '70%',
-                alignSelf: 'center',
-            },
-        timeInputBtn: {
-            justifyContent: 'center',
-            alignItems: 'center',
-            minHeight: 36,
-        },
-        timeInputText: {
-            color: '#F79489',
-            fontSize: 16,
-        },
-        modalOverlay: {
-            flex: 1,
-            justifyContent: 'center',
-            alignItems: 'center',
-            backgroundColor: 'rgba(0,0,0,0.2)',
-        },
-        modalContent: {
-            backgroundColor: '#fff',
-            borderRadius: 12,
-            padding: 16,
-            alignItems: 'center',
-        },
-        modalOkBtn: {
-            marginTop: 10,
-            alignSelf: 'center',
-        },
-        modalOkText: {
-            color: '#F79489',
-            fontWeight: 'bold',
-            fontSize: 16,
-        },
+    addBtnFull: {
+        backgroundColor: '#F79489',
+        borderRadius: 8,
+        paddingVertical: 7,
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginTop: 6,
+        marginBottom: 6,
+        width: '70%',
+        alignSelf: 'center',
+    },
+    timeInputBtn: {
+        justifyContent: 'center',
+        alignItems: 'center',
+        minHeight: 36,
+    },
+    timeInputText: {
+        color: '#F79489',
+        fontSize: 16,
+    },
+    modalOverlay: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: 'rgba(0,0,0,0.2)',
+    },
+    modalContent: {
+        backgroundColor: '#fff',
+        borderRadius: 12,
+        padding: 16,
+        alignItems: 'center',
+    },
+    modalOkBtn: {
+        marginTop: 10,
+        alignSelf: 'center',
+    },
+    modalOkText: {
+        color: '#F79489',
+        fontWeight: 'bold',
+        fontSize: 16,
+    },
     container: {
         flex: 1,
         backgroundColor: '#fff',
