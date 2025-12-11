@@ -5,6 +5,10 @@ const STORAGE_KEYS = {
   USERS_DB: "@rotas_privadas:users_db",
 };
 
+// =====================================================
+// === USUÁRIOS =======================================
+// =====================================================
+
 // Salvar usuário logado
 export const saveUser = async (user) => {
   try {
@@ -54,10 +58,10 @@ export const saveNewUser = async (user) => {
   try {
     const users = await getAllUsers();
 
-    // Verificar se email já existe
-    const emailExists = users.some((u) => u.email === user.email);
+    // Verificar se username/email já existe
+    const emailExists = users.some((u) => u.username === user.username);
     if (emailExists) {
-      return { success: false, message: "Email já cadastrado" };
+      return { success: false, message: "Username já cadastrado" };
     }
 
     // Adicionar novo usuário
@@ -72,11 +76,11 @@ export const saveNewUser = async (user) => {
 };
 
 // Validar login
-export const validateLogin = async (email, password) => {
+export const validateLogin = async (username, password) => {
   try {
     const users = await getAllUsers();
     const user = users.find(
-      (u) => u.email === email && u.password === password
+      (u) => u.username === username && u.password === password
     );
 
     if (user) {
@@ -85,7 +89,7 @@ export const validateLogin = async (email, password) => {
       return { success: true, user: userWithoutPassword };
     }
 
-    return { success: false, message: "Email ou senha inválidos" };
+    return { success: false, message: "Username ou senha inválidos" };
   } catch (error) {
     console.error("Erro ao validar login:", error);
     return { success: false, message: "Erro ao fazer login" };
@@ -100,5 +104,44 @@ export const clearAllData = async () => {
   } catch (error) {
     console.error("Erro ao limpar dados:", error);
     return false;
+  }
+};
+
+// =====================================================
+// === TAREFAS ========================================
+// =====================================================
+
+// Buscar tarefas do usuário
+export const getUserTasks = async (userId) => {
+  try {
+    const data = await AsyncStorage.getItem(`tasks_${userId}`);
+    return data ? JSON.parse(data) : [];
+  } catch (error) {
+    console.error("Erro ao buscar tasks:", error);
+    return [];
+  }
+};
+
+// Salvar tarefas do usuário
+export const saveUserTasks = async (userId, tasks) => {
+  try {
+    await AsyncStorage.setItem(`tasks_${userId}`, JSON.stringify(tasks));
+  } catch (error) {
+    console.error("Erro ao salvar tasks:", error);
+  }
+};
+
+// Alternar tarefa concluída
+export const toggleTaskComplete = async (taskId, userId) => {
+  try {
+    const tasks = await getUserTasks(userId);
+
+    const updated = tasks.map((t) =>
+      t.id === taskId ? { ...t, completed: !t.completed } : t
+    );
+
+    await saveUserTasks(userId, updated);
+  } catch (error) {
+    console.error("Erro ao atualizar tarefa:", error);
   }
 };
