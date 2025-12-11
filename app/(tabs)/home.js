@@ -1,140 +1,178 @@
-import React from "react";
-import { View, Text, StyleSheet, ScrollView } from "react-native";
+import React, { useEffect, useState } from "react";
+import { View, Text, StyleSheet, TouchableOpacity, FlatList } from "react-native";
 import { useAuth } from "../../contexts/AuthContext";
+import { getUserTasks, toggleTaskComplete } from "../../utils/storage";
+import { useRouter } from "expo-router";
+import { FontAwesome5 } from "@expo/vector-icons";
 
-export default function HomeScreen() {
+export default function Home() {
   const { user } = useAuth();
+  const [tasks, setTasks] = useState([]);
+  const router = useRouter();
+
+  const load = async () => {
+    if (!user) return;
+    const items = await getUserTasks(user.id);
+    items.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    setTasks(items.slice(0, 5));
+  };
+
+  useEffect(() => {
+    load();
+  }, [user]);
+
+  const handleQuick = () => router.push("/calendar"); // Vai para Calendar
+  const handleRoutines = () => router.push("/list"); // Vai para Lista de Tarefas
+
+  const handleToggle = async (id) => {
+    await toggleTaskComplete(id, user.id);
+    await load();
+  };
 
   return (
-    <ScrollView style={styles.container}>
-      <View style={styles.content}>
-        <Text style={styles.emoji}>👋</Text>
-        <Text style={styles.title}>Bem-vindo(a)!</Text>
-        <Text style={styles.userName}>{user?.name}</Text>
-
-        <View style={styles.card}>
-          <Text style={styles.cardTitle}>✅ Você está autenticado!</Text>
-          <Text style={styles.cardText}>
-            Esta é uma rota privada protegida pelo Expo Router. Você só consegue
-            acessar esta tela porque fez login com sucesso.
-          </Text>
-        </View>
-
-        <View style={styles.infoCard}>
-          <Text style={styles.infoTitle}>🎯 Recursos Implementados:</Text>
-          <Text style={styles.infoItem}>✓ Expo Router (navegação moderna)</Text>
-          <Text style={styles.infoItem}>
-            ✓ AsyncStorage (persistência de dados)
-          </Text>
-          <Text style={styles.infoItem}>✓ Rotas privadas automáticas</Text>
-          <Text style={styles.infoItem}>✓ Cadastro de usuários</Text>
-          <Text style={styles.infoItem}>✓ Login persistente</Text>
-          <Text style={styles.infoItem}>✓ Validação de dados</Text>
-        </View>
-
-        <View style={styles.tipCard}>
-          <Text style={styles.tipTitle}>💡 Dica:</Text>
-          <Text style={styles.tipText}>
-            Seus dados ficam salvos mesmo se você fechar o app! Use o botão
-            "Sair" no perfil para fazer logout.
+    <View style={styles.container}>
+      <View style={styles.header}>
+        <Text style={styles.logo}>Do It, Girl!</Text>
+        <View style={styles.counterCard}>
+          <Text style={styles.counterText}>
+            Tarefas de hoje: {tasks.length} a fazer, 2 concluídas
           </Text>
         </View>
       </View>
-    </ScrollView>
+
+      <View style={styles.goalCard}>
+        <Text style={styles.goalTitle}>Meta de Semana:</Text>
+        <Text style={styles.goalText}>Ser incrível!</Text>
+      </View>
+
+      <View style={styles.buttonsRow}>
+        <View style={styles.smallButtons}>
+          <TouchableOpacity style={styles.roundButton} onPress={() => router.push("/create")}>
+            <FontAwesome5 name="plus" size={24} color="#f2a8a3" />
+          </TouchableOpacity>
+          <Text style={styles.smallLabel}>Adicionar</Text>
+        </View>
+
+        <View style={styles.smallButtons}>
+          <TouchableOpacity style={styles.roundButton} onPress={handleQuick}>
+            <FontAwesome5 name="bolt" size={24} color="#f2a8a3" />
+          </TouchableOpacity>
+          <Text style={styles.smallLabel}>Rápido</Text>
+        </View>
+
+        <View style={styles.smallButtons}>
+          <TouchableOpacity style={styles.roundButton} onPress={handleRoutines}>
+            <FontAwesome5 name="stopwatch" size={24} color="#f2a8a3" />
+          </TouchableOpacity>
+          <Text style={styles.smallLabel}>Rotinas</Text>
+        </View>
+      </View>
+
+      <View style={styles.listArea}>
+        <FlatList
+          data={tasks}
+          keyExtractor={(item) => item.id}
+          renderItem={({ item }) => (
+            <TouchableOpacity onPress={() => handleToggle(item.id)} style={styles.taskCard}>
+              <Text style={[styles.taskTitle, item.completed && styles.taskDone]}>
+                {item.title}
+              </Text>
+              {item.completed && <FontAwesome5 name="check" size={18} color="#fff" />}
+            </TouchableOpacity>
+          )}
+          ListEmptyComponent={
+            <Text style={styles.empty}>Sem tarefas — crie na aba Rápido</Text>
+          }
+        />
+      </View>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#f5f5f5",
+    backgroundColor: "#f2a8a3",
+    padding: 18,
   },
-  content: {
-    flex: 1,
-    padding: 20,
-    paddingTop: 60,
+  header: {
+    marginTop: 20,
   },
-  emoji: {
-    fontSize: 80,
-    textAlign: "center",
-    marginBottom: 20,
+  logo: {
+    fontSize: 28,
+    fontWeight: "700",
+    color: "#fff",
+    marginBottom: 12,
   },
-  title: {
-    fontSize: 32,
-    fontWeight: "bold",
-    color: "#333",
-    marginBottom: 10,
-    textAlign: "center",
-  },
-  userName: {
-    fontSize: 24,
-    color: "#007AFF",
-    fontWeight: "600",
-    marginBottom: 30,
-    textAlign: "center",
-  },
-  card: {
-    backgroundColor: "#fff",
+  counterCard: {
+    backgroundColor: "rgba(255,255,255,0.3)",
+    padding: 10,
     borderRadius: 12,
-    padding: 20,
-    marginBottom: 20,
-    borderWidth: 1,
-    borderColor: "#ddd",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 3.84,
-    elevation: 5,
   },
-  cardTitle: {
+  counterText: {
+    color: "#fff",
+  },
+  goalCard: {
+    backgroundColor: "#f8c2c0",
+    borderRadius: 12,
+    padding: 18,
+    marginTop: 18,
+    marginBottom: 18,
+  },
+  goalTitle: {
+    color: "#fff",
+    fontWeight: "700",
+    fontSize: 16,
+    marginBottom: 6,
+  },
+  goalText: {
+    color: "#fff",
     fontSize: 18,
-    fontWeight: "bold",
-    color: "#333",
-    marginBottom: 10,
-    textAlign: "center",
+    fontWeight: "700",
   },
-  cardText: {
-    fontSize: 14,
-    color: "#666",
-    textAlign: "center",
-    lineHeight: 20,
+  buttonsRow: {
+    flexDirection: "row",
+    justifyContent: "space-around",
+    marginBottom: 18,
   },
-  infoCard: {
-    backgroundColor: "#E3F2FD",
+  smallButtons: {
+    alignItems: "center",
+  },
+  roundButton: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    backgroundColor: "#fff",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  smallLabel: {
+    color: "#fff",
+    marginTop: 8,
+  },
+  listArea: {
+    flex: 1,
+  },
+  taskCard: {
+    backgroundColor: "#f7bcbc",
+    padding: 12,
     borderRadius: 12,
-    padding: 20,
-    marginBottom: 20,
-    borderWidth: 1,
-    borderColor: "#90CAF9",
-  },
-  infoTitle: {
-    fontSize: 16,
-    fontWeight: "bold",
-    color: "#1976D2",
-    marginBottom: 15,
-  },
-  infoItem: {
-    fontSize: 14,
-    color: "#1565C0",
-    marginBottom: 8,
-    lineHeight: 20,
-  },
-  tipCard: {
-    backgroundColor: "#FFF3E0",
-    borderRadius: 12,
-    padding: 20,
-    borderWidth: 1,
-    borderColor: "#FFB74D",
-  },
-  tipTitle: {
-    fontSize: 16,
-    fontWeight: "bold",
-    color: "#F57C00",
     marginBottom: 10,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
   },
-  tipText: {
-    fontSize: 14,
-    color: "#E65100",
-    lineHeight: 20,
+  taskTitle: {
+    color: "#fff",
+    fontSize: 16,
+  },
+  taskDone: {
+    textDecorationLine: "line-through",
+    opacity: 0.7,
+  },
+  empty: {
+    color: "#fff",
+    textAlign: "center",
+    marginTop: 20,
   },
 });
