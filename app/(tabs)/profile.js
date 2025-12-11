@@ -1,37 +1,16 @@
-import React, { useState } from "react";
+import React from "react";
 import {
   View,
   Text,
   TouchableOpacity,
   StyleSheet,
   ScrollView,
-  TextInput,
   Alert,
-  Image
 } from "react-native";
 import { useAuth } from "../../contexts/AuthContext";
-import * as ImagePicker from 'expo-image-picker';
-import { useRouter } from "expo-router";
-import { Feather } from '@expo/vector-icons';
 
 export default function ProfileScreen() {
   const { user, signOut } = useAuth();
-  const router = useRouter();
-  const [profileImage, setProfileImage] = useState(null);
-  const [description] = useState(user?.description || "");
-
-  // Simulação de função de salvar descrição
-  const pickImage = async () => {
-    let result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
-      aspect: [1, 1],
-      quality: 1,
-    });
-    if (!result.canceled && result.assets && result.assets.length > 0) {
-      setProfileImage(result.assets[0].uri);
-    }
-  };
 
   const handleLogout = () => {
     Alert.alert("Sair", "Tem certeza que deseja sair?", [
@@ -45,34 +24,14 @@ export default function ProfileScreen() {
   };
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.scrollContent}>
-      <View style={styles.profileCard}>
+    <ScrollView style={styles.container}>
+      <View style={styles.content}>
         <View style={styles.avatarContainer}>
-          <TouchableOpacity onPress={pickImage} style={styles.picTouchable}>
-            <Image
-              style={styles.pic}
-              source={user?.profileImage ? { uri: user.profileImage } : null}
-            />
-          </TouchableOpacity>
+          <Text style={styles.avatar}>👤</Text>
         </View>
 
-        <Text style={styles.name}>{user?.username}</Text>
+        <Text style={styles.name}>{user?.name}</Text>
         <Text style={styles.email}>{user?.email}</Text>
-        <TouchableOpacity style={styles.editButton}>
-          <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 16 }} onPress={() => router.push('/editprofile')}>EDITAR PERFIL</Text>
-        </TouchableOpacity>
-
-        <Text style={styles.infoLabel}>Descrição</Text>
-        <View style={styles.descriptionRow}>
-          <TextInput
-            style={[styles.descriptionInput, { flex: 1, marginBottom: 0 }]}
-            value={description}
-            editable={false}
-            multiline={true}
-            maxLength={120}
-            underlineColorAndroid="transparent"
-          />
-        </View>
 
         <View style={styles.infoCard}>
           <Text style={styles.infoLabel}>ID do Usuário</Text>
@@ -88,48 +47,32 @@ export default function ProfileScreen() {
           </Text>
         </View>
 
-        <TouchableOpacity style={styles.logoutButton} onPress={async () => { await signOut(); router.replace('/(auth)/signin'); }}>
-          <Text style={styles.logoutText}>
-            <Feather name="log-out" size={22} color="#fff" /> Sair da Conta
+        <View style={styles.statusCard}>
+          <Text style={styles.statusEmoji}>✅</Text>
+          <Text style={styles.statusText}>Conta Ativa</Text>
+          <Text style={styles.statusDescription}>
+            Suas credenciais estão salvas no AsyncStorage
           </Text>
+        </View>
+
+        <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+          <Text style={styles.logoutText}>🔒 Sair da Conta</Text>
         </TouchableOpacity>
-        <View style={{ height: 40 }} />
+
+        <View style={styles.versionCard}>
+          <Text style={styles.versionText}>
+            Versão 2.0 - Com Expo Router + AsyncStorage
+          </Text>
+        </View>
       </View>
     </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  descriptionRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    width: '100%',
-    marginBottom: 15,
-  },
-  picTouchable: {
-    position: "relative",
-  },
-  cameraIconContainer: {
-    position: "absolute",
-    bottom: 8,
-    right: 8,
-    backgroundColor: "#fff",
-    borderRadius: 16,
-    padding: 4,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.15,
-    shadowRadius: 2,
-    elevation: 2,
-    zIndex: 20,
-  },
-  cameraIcon: {
-    fontSize: 18,
-    color: "#F48C8C",
-  },
   container: {
     flex: 1,
-    backgroundColor: "#F48C8C",
+    backgroundColor: "#f5f5f5",
   },
   content: {
     flex: 1,
@@ -138,145 +81,105 @@ const styles = StyleSheet.create({
     paddingTop: 60,
   },
   avatarContainer: {
-    width: "100%",
-    height: 0,
-    alignItems: "flex-start",
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    backgroundColor: "#007AFF",
     justifyContent: "center",
+    alignItems: "center",
     marginBottom: 20,
-    backgroundColor: "transparent",
-    position: "relative",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 5,
   },
   avatar: {
     fontSize: 50,
   },
   name: {
-    fontSize: 26,
-    fontWeight: "800",
-    color: "#fff",
-    marginTop: 6,
-    marginBottom: 2,
-    textAlign: "left",
-    marginLeft: 140,
-    textShadowRadius: 4,
+    fontSize: 28,
+    fontWeight: "bold",
+    color: "#333",
+    marginBottom: 8,
   },
   email: {
-    fontSize: 13,
-    color: "rgba(255,255,255,0.9)",
-    marginBottom: 12,
-    textAlign: "left",
-    marginLeft: 140,
+    fontSize: 16,
+    color: "#666",
+    marginBottom: 30,
   },
   infoCard: {
     width: "100%",
-    backgroundColor: "#FADCD9",
+    backgroundColor: "#fff",
     borderRadius: 12,
-    paddingVertical: 10,
-    paddingHorizontal: 14,
-    marginBottom: 10,
+    padding: 20,
+    marginBottom: 15,
     borderWidth: 1,
     borderColor: "#ddd",
   },
   infoLabel: {
-    fontSize: 11,
-    color: "#ff0095ff",
+    fontSize: 12,
+    color: "#888",
     marginBottom: 5,
-    marginLeft: 5,
     textTransform: "uppercase",
     fontWeight: "600",
   },
   infoValue: {
-    fontSize: 14,
-    color: "#000000ff",
+    fontSize: 16,
+    color: "#333",
     fontWeight: "500",
   },
-  logoutButton: {
-    backgroundColor: "#F5AEA7",
-    borderRadius: 25,
-    paddingVertical: 12,
-    paddingHorizontal: 40,
+  statusCard: {
+    width: "100%",
+    backgroundColor: "#E8F5E9",
+    borderRadius: 12,
+    padding: 20,
+    marginBottom: 30,
     alignItems: "center",
-    alignSelf: "center",
-    marginTop: 35,
+    borderWidth: 1,
+    borderColor: "#81C784",
+  },
+  statusEmoji: {
+    fontSize: 40,
+    marginBottom: 10,
+  },
+  statusText: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: "#2E7D32",
+    marginBottom: 5,
+  },
+  statusDescription: {
+    fontSize: 12,
+    color: "#388E3C",
+    textAlign: "center",
+  },
+  logoutButton: {
+    width: "100%",
+    backgroundColor: "#FF3B30",
+    borderRadius: 12,
+    padding: 18,
+    alignItems: "center",
+    marginBottom: 20,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.15,
+    shadowOpacity: 0.2,
     shadowRadius: 4,
-    elevation: 4,
+    elevation: 5,
   },
   logoutText: {
     color: "#fff",
+    fontSize: 16,
     fontWeight: "bold",
-    fontSize: 18,
-    letterSpacing: 1,
-    textShadowColor: "#0002",
-    textShadowOffset: { width: 0, height: 1 },
-    textShadowRadius: 2,
   },
-  pic: {
-    width: 110,
-    height: 110,
-    borderRadius: 55,
-    borderColor: "#fff",
-    borderWidth: 3,
-    position: "absolute",
-    left: 20,
-    top: 0,
-    zIndex: 10,
-    backgroundColor: "#eee",
-    overflow: "hidden",
-  },
-  profileCard: {
-    backgroundColor: "#ddb1b1ff",
-    borderTopLeftRadius: 30,
-    borderTopRightRadius: 30,
-    borderBottomLeftRadius: 0,
-    borderBottomRightRadius: 0,
-    paddingTop: 36,
-    paddingHorizontal: 20,
-    width: '100%',
-    alignItems: "flex-start",
-    alignSelf: "stretch",
-    marginTop: 40,
-    marginBottom: 0,
-    flex: 1,
-    minHeight: '92%',
-    overflow: "visible",
-    shadowColor: "#ff0095ff",
-    shadowOpacity: 0.15,
-    shadowRadius: 8,
-    elevation: 5,
-  },
-  scrollContent: {
-    flexGrow: 1,
-    justifyContent: "center",
+  versionCard: {
+    width: "100%",
+    padding: 15,
     alignItems: "center",
   },
-  editButton: {
-    backgroundColor: "rgba(255,255,255,0.18)",
-    borderRadius: 24,
-    paddingVertical: 10,
-    paddingHorizontal: 22,
-    alignItems: "center",
-    alignSelf: "flex-start",
-    marginTop: 6,
-    marginLeft: 140,
-    borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.25)",
-    shadowColor: "rgba(0,0,0,0.12)",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.12,
-    shadowRadius: 6,
-    elevation: 3,
-  },
-  descriptionInput: {
-    width: '100%',
-    minHeight: 100,
-    borderRadius: 12,
-    padding: 12,
-    marginBottom: 15,
-    fontSize: 15,
-    color: '#000000ff',
-    borderWidth: 1,
-    borderColor: '#ddb1b1ff',
+  versionText: {
+    fontSize: 12,
+    color: "#999",
+    textAlign: "center",
   },
 });

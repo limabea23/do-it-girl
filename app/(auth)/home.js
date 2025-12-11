@@ -1,197 +1,145 @@
-import React, { useEffect, useState } from "react";
-import { View, Text, StyleSheet, TouchableOpacity, FlatList } from "react-native";
-import { useAuth } from "../../contexts/AuthContext";
-import { getUserTasks, toggleTaskComplete } from "../../utils/storage";
-import { useRouter } from "expo-router";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
-export default function Home() {
-  const { user } = useAuth();
-  const [tasks, setTasks] = useState([]);
-  const router = useRouter();
+const STORAGE_KEYS = {
+  USER: "@rotas_privadas:user",
+  USERS_DB: "@rotas_privadas:users_db",
+};
 
-  const load = async () => {
-    const userId = user?.id || "guest";
-    const items = await getUserTasks(userId);
-    
-    items.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-    setTasks(items.slice(0, 5));
-  };
+// Salvar usuário logado
+export const saveUser = async (user) => {
+  try {
+    await AsyncStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(user));
+    return true;
+  } catch (error) {
+    console.error("Erro ao salvar usuário:", error);
+    return false;
+  }
+};
 
-  useEffect(() => {
-    load();
-  }, [user]);
+// Obter usuário logado
+export const getUser = async () => {
+  try {
+    const user = await AsyncStorage.getItem(STORAGE_KEYS.USER);
+    return user ? JSON.parse(user) : null;
+  } catch (error) {
+    console.error("Erro ao obter usuário:", error);
+    return null;
+  }
+};
 
-  const handleQuick = () => router.push("/create");
-  const handleRoutines = () => router.push("/routines");
+// Remover usuário logado (logout)
+export const removeUser = async () => {
+  try {
+    await AsyncStorage.removeItem(STORAGE_KEYS.USER);
+    return true;
+  } catch (error) {
+    console.error("Erro ao remover usuário:", error);
+    return false;
+  }
+};
 
-  const handleToggle = async (id) => {
-    await toggleTaskComplete(id);
-    await load();
-  };
+// Obter todos os usuários cadastrados
+export const getAllUsers = async () => {
+  try {
+    const users = await AsyncStorage.getItem(STORAGE_KEYS.USERS_DB);
+    return users ? JSON.parse(users) : [];
+  } catch (error) {
+    console.error("Erro ao obter usuários:", error);
+    return [];
+  }
+};
 
-  return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.logo}>Do It, Girl!</Text>
-        <View style={styles.counterCard}>
-          <Text style={styles.counterText}>Tarefas de hoje: {tasks.length} a fazer, 2 concluídas</Text>
-        </View>
-      </View>
+// Salvar novo usuário no banco de dados
+export const saveNewUser = async (user) => {
+  try {
+    const users = await getAllUsers();
 
-      <View style={styles.goalCard}>
-        <Text style={styles.goalTitle}>Meta de Semana:</Text>
-        <Text style={styles.goalText}>Ser incrível !</Text>
-      </View>
+    // Verificar se email já existe
+    const emailExists = users.some((u) => u.email === user.email);
+    if (emailExists) {
+      return { success: false, message: "Email já cadastrado" };
+    }
 
-      <View style={styles.buttonsRow}>
-        <View style={styles.smallButtons}>
-          <TouchableOpacity style={styles.roundButton} onPress={() => router.push('/create')}>
-            <Text style={styles.roundText}>+</Text>
-          </TouchableOpacity>
-          <Text style={styles.smallLabel}>Adicionar</Text>
-        </View>
+    // Adicionar novo usuário
+    users.push(user);
+    await AsyncStorage.setItem(STORAGE_KEYS.USERS_DB, JSON.stringify(users));
 
-        <View style={styles.smallButtons}>
-          <TouchableOpacity style={styles.roundButton} onPress={handleQuick}>
-            <Text style={styles.roundText}>⚡</Text>
-          </TouchableOpacity>
-          <Text style={styles.smallLabel}>Rápido</Text>
-        </View>
+    return { success: true };
+  } catch (error) {
+    console.error("Erro ao salvar novo usuário:", error);
+    return { success: false, message: "Erro ao cadastrar usuário" };
+  }
+};
 
-        <View style={styles.smallButtons}>
-          <TouchableOpacity style={styles.roundButton} onPress={handleRoutines}>
-            <Text style={styles.roundText}>⏱</Text>
-          </TouchableOpacity>
-          <Text style={styles.smallLabel}>Rotinas</Text>
-        </View>
-      </View>
+// Validar login
+export const validateLogin = async (email, password) => {
+  try {
+    const users = await getAllUsers();
+    const user = users.find(
+      (u) => u.email === email && u.password === password
+    );
 
-      <View style={styles.listArea}>
-        <FlatList
-          data={tasks}
-          keyExtractor={(item) => item.id}
-          renderItem={({ item }) => (
-            <TouchableOpacity onPress={() => handleToggle(item.id)} style={styles.taskCard}>
-              <Text style={[styles.taskTitle, item.completed && styles.taskDone]}>{item.title}</Text>
-              <Text style={styles.check}>{item.completed ? '✓' : ''}</Text>
-            </TouchableOpacity>
-          )}
-          ListEmptyComponent={<Text style={styles.empty}>Sem tarefas — crie na aba Rápido</Text>}
-        />
-      </View>
-    </View>
-  );
-}
+    if (user) {
+      // Não retornar a senha
+      const { password: _, ...userWithoutPassword } = user;
+      return { success: true, user: userWithoutPassword };
+    }
 
-const styles = StyleSheet.create({
-  container: 
-  { 
-    flex: 1, 
-    backgroundColor: '#f2a8a3',
-    padding: 18 
-  },
-  header: 
-  { 
-    marginTop: 20 
-  },
-  logo: 
-  { 
-    fontSize: 28,
-     fontWeight: '700',
-      color: '#fff',
-       marginBottom: 12
-       },
-  counterCard:
-   {
-     backgroundColor: 'rgba(255,255,255,0.3)',
-     padding: 10, 
-     borderRadius: 12
-     },
-  counterText: 
-  { 
-    color: '#fff'
-   },
-  goalCard: 
-  { 
-    backgroundColor: '#f8c2c0',
-     borderRadius: 12, 
-     padding: 18,
-      marginTop: 18,
-       marginBottom: 18 
-      },
-  goalTitle: 
-  { 
-    color: '#fff',
-     fontWeight: '700',
-      fontSize: 16,
-       marginBottom: 6 
-      },
-  goalText: 
-  { 
-    color: '#fff',
-     fontSize: 18,
-      fontWeight: '700' 
-    },
-  buttonsRow:
-   { 
-    flexDirection: 'row',
-     justifyContent: 'space-around',
-      marginBottom: 18 
-    },
-  smallButtons: 
-  { 
-    alignItems: 'center'
-   },
-  roundButton: 
-  { 
-    width: 64,
-     height: 64,
-     borderRadius: 32, 
-     backgroundColor: '#fff', 
-     justifyContent: 'center', 
-     alignItems: 'center' },
-  roundText: 
-  { 
-    fontSize: 22
-   },
-  smallLabel: 
-  { 
-    color: '#fff',
-     marginTop: 8 
-    },
-  listArea:
-   { 
-    flex: 1 
-  },
-  taskCard:
-   { 
-    backgroundColor: '#f7bcbc', 
-    padding: 12, 
-    borderRadius: 12,
-    marginBottom: 10, 
-    flexDirection: 'row', 
-    justifyContent: 'space-between', 
-    alignItems: 'center'
-   },
-  taskTitle: 
-  { 
-    color: '#fff', 
-    fontSize: 16 
-  },
-  taskDone: 
-  { 
-    textDecorationLine: 'line-through',
-     opacity: 0.7 
-  },
-  check: 
-  { 
-    color: '#fff',
-     fontSize: 18 
-  },
-  empty: 
-  { 
-    color: '#fff', 
-    textAlign: 'center', 
-    marginTop: 20 
-  },
-});
+    return { success: false, message: "Email ou senha inválidos" };
+  } catch (error) {
+    console.error("Erro ao validar login:", error);
+    return { success: false, message: "Erro ao fazer login" };
+  }
+};
+
+// Limpar todos os dados (útil para debug)
+export const clearAllData = async () => {
+  try {
+    await AsyncStorage.multiRemove([STORAGE_KEYS.USER, STORAGE_KEYS.USERS_DB]);
+    return true;
+  } catch (error) {
+    console.error("Erro ao limpar dados:", error);
+    return false;
+  }
+};
+
+
+
+// =====================================================
+// === SUAS FUNÇÕES DE TAREFAS (APENAS ACRESCENTADAS) ===
+// =====================================================
+
+// Buscar tarefas do usuário
+export const getUserTasks = async (userId) => {
+  try {
+    const data = await AsyncStorage.getItem(`tasks_${userId}`);
+    return data ? JSON.parse(data) : [];
+  } catch (error) {
+    console.error("Erro ao buscar tasks:", error);
+    return [];
+  }
+};
+
+// Salvar tarefas
+export const saveUserTasks = async (userId, tasks) => {
+  try {
+    await AsyncStorage.setItem(`tasks_${userId}`, JSON.stringify(tasks));
+  } catch (error) {
+    console.error("Erro ao salvar tasks:", error);
+  }
+};
+
+// Alternar tarefa concluída
+export const toggleTaskComplete = async (taskId, userId) => {
+  try {
+    const tasks = await getUserTasks(userId);
+
+    const updated = tasks.map((t) =>
+      t.id === taskId ? { ...t, completed: !t.completed } : t
+    );
+
+    await saveUserTasks(userId, updated);
+  } catch (error) {
+    console.error("Erro ao atualizar tarefa:", error);
+  }
+};
